@@ -7,11 +7,12 @@ with open("requirements.txt") as f:
     requirements = f.read().splitlines()
 
 setuptools.setup(
-    name="greeclimate",
+    name="gree_versati",
     python_requires=">=3.8",
     install_requires=requirements,
     author="Clifford Roche",
     author_email="",
+    version="2.1.2",
     description="Discover, connect and control Gree based minisplit systems",
     long_description=long_description,
     long_description_content_type="text/markdown",

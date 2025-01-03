@@ -6,13 +6,15 @@ from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
 
-from greeclimate.discovery import Discovery, Listener
+from gree_versati.discovery import Discovery, Listener
+
 from .common import (
     DEFAULT_TIMEOUT,
     DISCOVERY_REQUEST,
     DISCOVERY_RESPONSE,
     Responder,
-    get_mock_device_info, encrypt_payload,
+    encrypt_payload,
+    get_mock_device_info,
 )
 
 

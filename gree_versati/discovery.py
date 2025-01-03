@@ -6,10 +6,10 @@ from asyncio import Task
 from asyncio.events import AbstractEventLoop
 from ipaddress import IPv4Address
 
-from greeclimate.cipher import CipherV1
-from greeclimate.device import DeviceInfo
-from greeclimate.network import BroadcastListenerProtocol, IPAddr
-from greeclimate.taskable import Taskable
+from gree_versati.cipher import CipherV1
+from gree_versati.deviceinfo import DeviceInfo
+from gree_versati.network import BroadcastListenerProtocol, IPAddr
+from gree_versati.taskable import Taskable
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -105,7 +105,8 @@ class Discovery(BroadcastListenerProtocol, Listener, Taskable):
                     # ip address info may have been updated, so store the new info
                     # and trigger a `device_update` event.
                     self._device_infos[index] = device_info
-                    tasks = [l.device_update(device_info) for l in self._listeners]
+                    tasks = [l.device_update(device_info)
+                             for l in self._listeners]
                     await asyncio.gather(*tasks, return_exceptions=True)
                 return
 

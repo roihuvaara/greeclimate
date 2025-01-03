@@ -4,7 +4,7 @@ import asyncio
 import logging
 from asyncio import Task
 from asyncio.events import AbstractEventLoop
-from typing import List, Coroutine
+from typing import Coroutine, List
 
 _LOGGER = logging.getLogger(__name__)
 

@@ -2,14 +2,14 @@ from unittest.mock import patch
 
 import pytest
 
-from greeclimate.device import Props, Device
+from gree_versati.device import Device, Props
 
 
 @pytest.mark.asyncio
 async def test_issue_69_TemSen_40_should_not_set_firmware_v4():
     from tests.test_device import generate_device_mock_async
 
-    mock_v3_state = { "TemSen": 40 }
+    mock_v3_state = {"TemSen": 40}
     device = await generate_device_mock_async()
 
     for p in Props:
@@ -24,12 +24,13 @@ async def test_issue_69_TemSen_40_should_not_set_firmware_v4():
 
 """Tests for issue 72"""
 
+
 @pytest.mark.asyncio
 async def test_issue_87_quiet_should_set_2():
     """Check that quiet mode uses 2 instead of 1"""
     from tests.test_device import generate_device_mock_async
 
-    mock_v3_state = { "Quiet": 2 }
+    mock_v3_state = {"Quiet": 2}
     device = await generate_device_mock_async()
 
     assert device.get_property(Props.QUIET) is None

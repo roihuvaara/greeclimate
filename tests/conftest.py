@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pytest
 
-from greeclimate.device import Device
+from gree_versati.device import Device
 from tests.common import FakeCipher
 
 MOCK_INTERFACES = ["lo"]

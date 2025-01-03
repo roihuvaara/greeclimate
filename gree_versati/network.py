@@ -6,8 +6,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, Tuple, Union
 
-from greeclimate.cipher import CipherBase
-from greeclimate.deviceinfo import DeviceInfo
+from gree_versati.cipher import CipherBase
+from gree_versati.deviceinfo import DeviceInfo
 
 NETWORK_TIMEOUT = 10
 _LOGGER = logging.getLogger(__name__)
@@ -52,8 +52,8 @@ class DeviceProtocolBase2(asyncio.DatagramProtocol):
         self._transport: Union[asyncio.transports.DatagramTransport, None] = None
         self._cipher: Union[CipherBase, None] = None
 
-
     # This event need to be implemented to handle incoming requests
+
     def packet_received(self, obj, addr: IPAddr) -> None:
         """Event called when a packet is received and decoded.
 
@@ -61,7 +61,8 @@ class DeviceProtocolBase2(asyncio.DatagramProtocol):
             obj (JSON): Json object with decoded UDP data
             addr (IPAddr): Endpoint address of the sender
         """
-        raise NotImplementedError("packet_received must be implemented in a subclass")
+        raise NotImplementedError(
+            "packet_received must be implemented in a subclass")
 
     @property
     def device_cipher(self) -> CipherBase:
@@ -108,7 +109,8 @@ class DeviceProtocolBase2(asyncio.DatagramProtocol):
 
         # In this case the connection was closed unexpectedly
         if exc is not None:
-            _LOGGER.exception("Connection was closed unexpectedly", exc_info=exc)
+            _LOGGER.exception(
+                "Connection was closed unexpectedly", exc_info=exc)
             raise exc
 
     def error_received(self, exc: Exception) -> None:
@@ -127,16 +129,30 @@ class DeviceProtocolBase2(asyncio.DatagramProtocol):
 
     def datagram_received(self, data: bytes, addr: IPAddr) -> None:
         """Handle an incoming datagram."""
+        _LOGGER.debug(
+            f"Raw datagram received from {addr}: {data[:100]}...")  # Log first 100 bytes to avoid huge logs
+
         if len(data) == 0:
+            _LOGGER.warning("Received empty datagram")
             return
 
-        obj = json.loads(data)
+        try:
+            obj = json.loads(data)
+            _LOGGER.debug(f"Decoded JSON: {obj}")
 
-        if obj.get("pack"):
-            obj["pack"] = self._cipher.decrypt(obj["pack"])
+            if obj.get("pack"):
+                _LOGGER.debug("Attempting to decrypt pack")
+                obj["pack"] = self._cipher.decrypt(obj["pack"])
+                _LOGGER.debug(f"Decrypted pack: {obj['pack']}")
 
-        _LOGGER.debug("Received packet from %s:\n<- %s", addr[0], json.dumps(obj))
-        self.packet_received(obj, addr)
+            _LOGGER.debug("Received packet from %s:\n<- %s",
+                          addr[0], json.dumps(obj))
+            self.packet_received(obj, addr)
+
+        except json.JSONDecodeError as e:
+            _LOGGER.error(f"Failed to decode JSON from datagram: {e}")
+        except Exception as e:
+            _LOGGER.error(f"Error processing datagram: {e}", exc_info=True)
 
     async def send(self, obj, addr: IPAddr = None, cipher: Union[CipherBase, None] = None) -> None:
         """Send encode and send JSON command to the device.
@@ -150,7 +166,8 @@ class DeviceProtocolBase2(asyncio.DatagramProtocol):
         if obj.get("pack"):
             if obj.get("i") == 1:
                 if cipher is None:
-                    raise ValueError("Cipher must be supplied for SCAN or BIND messages")
+                    raise ValueError(
+                        "Cipher must be supplied for SCAN or BIND messages")
                 self._cipher = cipher
 
             obj["pack"], tag = self._cipher.encrypt(obj["pack"])
@@ -219,6 +236,8 @@ class DeviceProtocol2(DeviceProtocolBase2):
             obj (JSON): Json object with decoded UDP data
             addr (IPAddr): Endpoint address of the sender
         """
+        _LOGGER.debug(f"Packet received from {addr}: {obj}")
+
         params = {
             Response.BIND_OK.value: lambda o, a: [o["pack"]["key"]],
             Response.DATA.value: lambda o, a: [dict(zip(o["pack"]["cols"], o["pack"]["dat"]))],
@@ -231,8 +250,14 @@ class DeviceProtocol2(DeviceProtocolBase2):
         }
         try:
             resp = obj.get("pack", {}).get("t")
+            _LOGGER.debug(f"Response type: {resp}")
+
             handler = handlers.get(resp, self.handle_unknown_packet)
+            _LOGGER.debug(f"Using handler: {handler}")
+
             param = params.get(resp, lambda o, a: (o, a))(obj, addr)
+            _LOGGER.debug(f"Parsed parameters: {param}")
+
             handler(*param)
         except AttributeError as e:
             _LOGGER.exception("Error while handling packet", exc_info=e)
@@ -245,7 +270,8 @@ class DeviceProtocol2(DeviceProtocolBase2):
                     callback(*param)
 
     def handle_unknown_packet(self, obj, addr: IPAddr) -> None:
-        _LOGGER.warning("Received unknown packet from %s:\n%s", addr[0], json.dumps(obj))
+        _LOGGER.warning("Received unknown packet from %s:\n%s",
+                        addr[0], json.dumps(obj))
 
     def __handle_device_bound(self, key: str) -> None:
         self._ready.set()

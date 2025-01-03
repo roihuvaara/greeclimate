@@ -5,8 +5,8 @@ import logging
 
 from aioconsole import ainput
 
-from greeclimate.device import Device, DeviceInfo
-from greeclimate.discovery import Discovery, Listener
+from gree_versati.device import Device, DeviceInfo
+from gree_versati.discovery import Discovery, Listener
 
 logging.basicConfig(
     level=logging.DEBUG, format="%(name)s - %(levelname)s - %(message)s"
@@ -90,5 +90,3 @@ if __name__ == "__main__":
 
     if args.decrypt:
         asyncio.run(wait_for_input())
-
-    

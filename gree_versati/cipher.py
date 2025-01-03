@@ -1,7 +1,7 @@
 import base64
 import json
 import logging
-from typing import Union, Tuple
+from typing import Tuple, Union
 
 from Crypto.Cipher import AES
 
@@ -10,15 +10,15 @@ _logger = logging.getLogger(__name__)
 class CipherBase:
     def __init__(self, key: bytes) -> None:
         self._key: bytes = key
-        
+
     @property
     def key(self) -> str:
         return self._key.decode()
-    
+
     @key.setter
     def key(self, value: str) -> None:
         self._key = value.encode()
-        
+
     def encrypt(self, data) -> Tuple[str, Union[str, None]]:
         raise NotImplementedError
 

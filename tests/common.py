@@ -3,7 +3,7 @@ from socket import SOCK_DGRAM
 from typing import Tuple, Union
 from unittest.mock import Mock
 
-from greeclimate.cipher import CipherV1, CipherBase
+from gree_versati.cipher import CipherBase, CipherV1
 
 DEFAULT_TIMEOUT = 1
 DISCOVERY_REQUEST = {"t": "scan"}
@@ -127,7 +127,8 @@ class Responder:
         """Enter the context manager."""
         self.sock = socket.socket(self.family, SOCK_DGRAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, self.bcast)
+        self.sock.setsockopt(
+            socket.SOL_SOCKET, socket.SO_BROADCAST, self.bcast)
         self.sock.settimeout(DEFAULT_TIMEOUT)
         self.sock.bind(("", self.addr))
         return self.sock

@@ -3,9 +3,9 @@ import enum
 
 import pytest
 
-from greeclimate.cipher import CipherV1
-from greeclimate.device import Device, DeviceInfo, Props, TemperatureUnits
-from greeclimate.exceptions import DeviceNotBoundError, DeviceTimeoutError
+from gree_versati.cipher import CipherV1
+from gree_versati.device import Device, DeviceInfo, Props, TemperatureUnits
+from gree_versati.exceptions import DeviceNotBoundError, DeviceTimeoutError
 
 
 class FakeProps(enum.Enum):
@@ -208,7 +208,7 @@ async def test_device_bind(cipher, send):
     info = DeviceInfo(*get_mock_info())
     device = Device(info, timeout=1)
     fake_key = "abcdefgh12345678"
-    
+
     def fake_send(*args, **kwargs):
         """Emulate a bind event"""
         device.device_cipher = CipherV1(fake_key.encode())
@@ -222,10 +222,10 @@ async def test_device_bind(cipher, send):
 
     assert device.device_cipher is not None
     assert device.device_cipher.key == fake_key
-    
+
     # Bind with cipher already set
     await device.bind()
-    assert send.call_count == 2 
+    assert send.call_count == 2
 
 
 @pytest.mark.asyncio
@@ -279,7 +279,7 @@ async def test_device_late_bind_from_update(cipher, send):
 
     send.side_effect = None
     await device.push_state_update()
-    
+
     assert device.device_cipher is not None
     assert device.device_cipher.key == fake_key
 
@@ -300,15 +300,15 @@ async def test_device_late_bind_from_request_version(cipher, send):
     await device.request_version()
     assert send.call_count == 2
     assert device.device_cipher.key == fake_key
-    
-    
+
+
 @pytest.mark.asyncio
 async def test_device_bind_no_cipher(cipher, send):
     """Check that the device handles late binding sequences."""
     info = DeviceInfo(*get_mock_info())
     device = Device(info, timeout=1)
     fake_key = "abcdefgh12345678"
-    
+
     with pytest.raises(ValueError):
         await device.bind(fake_key)
 
@@ -317,7 +317,7 @@ async def test_device_bind_no_cipher(cipher, send):
 async def test_device_bind_no_device_info(cipher, send):
     """Check that the device handles late binding sequences."""
     device = Device(None, timeout=1)
-    
+
     with pytest.raises(DeviceNotBoundError):
         await device.bind()
 
@@ -421,11 +421,12 @@ async def test_set_properties_timeout(cipher, send):
     device.turbo = True
     device.steady_heat = True
     device.power_save = True
-    
+
     assert len(device._dirty)
 
     send.reset_mock()
-    send.side_effect = [asyncio.TimeoutError, asyncio.TimeoutError, asyncio.TimeoutError]
+    send.side_effect = [asyncio.TimeoutError,
+                        asyncio.TimeoutError, asyncio.TimeoutError]
     with pytest.raises(DeviceTimeoutError):
         await device.push_state_update()
 
@@ -488,7 +489,7 @@ async def test_update_current_temp_v3(temsen, hid, cipher, send):
     send.side_effect = fake_send
 
     await device.update_state()
-    
+
     assert device.get_property(Props.TEMP_SENSOR) is not None
     assert device.current_temperature == temsen - 40
 
@@ -528,7 +529,8 @@ async def test_update_current_temp_bad(cipher, send):
 
     await device.update_state()
 
-    assert device.current_temperature == get_mock_state_bad_temp()["TemSen"] - 40
+    assert device.current_temperature == get_mock_state_bad_temp()[
+        "TemSen"] - 40
 
 
 @pytest.mark.asyncio
@@ -679,7 +681,7 @@ async def test_mismatch_temrec_farenheit(temperature, cipher, send):
     """Check that temperature is set and read properly in F."""
     temSet = round((temperature - 32.0) * 5.0 / 9.0)
     temRec = (int)((((temperature - 32.0) * 5.0 / 9.0) - temSet) > 0)
-    
+
     state = get_mock_state()
     state["TemSen"] = temSet + 40
     # Now, we alter the temRec on the device so it is not found in the table.
@@ -688,7 +690,7 @@ async def test_mismatch_temrec_farenheit(temperature, cipher, send):
     device = await generate_device_mock_async()
     device.temperature_units = TemperatureUnits.F
     device.target_temperature = temperature
-    
+
     await device.push_state_update()
     assert send.call_count == 1
 
@@ -733,4 +735,3 @@ def test_device_key_set_get():
     device.device_cipher = CipherV1()
     device.device_key = "fake_key"
     assert device.device_key == "fake_key"
-    

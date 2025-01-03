@@ -2,24 +2,29 @@ import asyncio
 import json
 import socket
 from threading import Thread
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
-from greeclimate.deviceinfo import DeviceInfo
-from greeclimate.network import (
+from gree_versati.deviceinfo import DeviceInfo
+from gree_versati.network import (
     BroadcastListenerProtocol,
+    Commands,
+    DeviceProtocol2,
     DeviceProtocolBase2,
     IPAddr,
-    DeviceProtocol2, Commands, Response,
+    Response,
 )
+
 from .common import (
+    DEFAULT_REQUEST,
     DEFAULT_RESPONSE,
     DEFAULT_TIMEOUT,
     DISCOVERY_REQUEST,
     DISCOVERY_RESPONSE,
+    FakeCipher,
     Responder,
-    DEFAULT_REQUEST, generate_response, FakeCipher,
+    generate_response,
 )
 from .test_device import get_mock_info
 
@@ -258,9 +263,10 @@ def test_bindok_handling():
     response = generate_response({"t": "bindok", "key": "fake-key"})
     protocol = DeviceProtocol2(timeout=DEFAULT_TIMEOUT)
     protocol.device_cipher = FakeCipher(b"1234567890123456")
-    
+
     with patch.object(DeviceProtocol2, "handle_device_bound") as mock:
-        protocol.datagram_received(json.dumps(response).encode(), ("0.0.0.0", 0))
+        protocol.datagram_received(json.dumps(
+            response).encode(), ("0.0.0.0", 0))
         assert mock.call_count == 1
         assert mock.call_args[0][0] == "fake-key"
 
@@ -311,6 +317,7 @@ def test_create_status_message():
             'cols': ['test'],
         }
     }
+
 
 def test_create_command_message():
     # Arrange
@@ -457,7 +464,7 @@ def test_generate_payload(use_default_key, command, data):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("event_name, data",[
+@pytest.mark.parametrize("event_name, data", [
     (Response.BIND_OK, {'key': 'fake-key'}),
     (Response.DATA, {'cols': ['test'], 'dat': ['value']}),
     (Response.RESULT, {'opt': ['key'], 'val': ['value']})
@@ -505,8 +512,8 @@ def test_packet_received_not_implemented():
     # Act
     with pytest.raises(NotImplementedError):
         protocol.packet_received({}, ("0.0.0.0", 0))
-        
-        
+
+
 def test_packet_received_invalid_data():
     # Arrange
     protocol = DeviceProtocol2()
@@ -515,7 +522,7 @@ def test_packet_received_invalid_data():
     protocol.packet_received(None, ("0.0.0.0", 0))
     protocol.packet_received({}, ("0.0.0.0", 0))
     protocol.packet_received({"pack"}, ("0.0.0.0", 0))
-    
+
     with patch.object(protocol, "handle_unknown_packet") as mock:
         protocol.packet_received({"pack": {"t": "unknown"}}, ("0.0.0.0", 0))
         mock.assert_called_once()
@@ -541,22 +548,22 @@ def test_cipher_is_not_set():
     key = None
     with pytest.raises(ValueError):
         key = protocol.device_key
-        
+
     assert key is None
-    
+
     with pytest.raises(ValueError):
         protocol.device_key = "fake-key"
-    
-    
+
+
 def test_add_invalid_handler():
     # Arrange
     protocol = DeviceProtocol2()
     callback = MagicMock()
-    
+
     # Act
     with pytest.raises(ValueError):
         protocol.add_handler(Response("invalid"), callback)
-    
+
     with pytest.raises(ValueError):
         protocol.add_handler(Response("invalid"), callback)
 
@@ -565,10 +572,9 @@ def test_device_key_get_set():
     # Arrange
     protocol = DeviceProtocolBase2
     key = "fake-key"
-    
+
     # Act
     protocol.device_key = key
-    
+
     # Assert
     assert protocol.device_key == key
-    
