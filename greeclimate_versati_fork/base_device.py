@@ -4,11 +4,11 @@ import re
 from asyncio import AbstractEventLoop
 from typing import Union
 
-from greeclimate.cipher import CipherV1, CipherV2
-from greeclimate.deviceinfo import DeviceInfo
-from greeclimate.exceptions import DeviceNotBoundError, DeviceTimeoutError
-from greeclimate.network import DeviceProtocol2
-from greeclimate.taskable import Taskable
+from greeclimate_versati_fork.cipher import CipherV1, CipherV2
+from greeclimate_versati_fork.deviceinfo import DeviceInfo
+from greeclimate_versati_fork.exceptions import DeviceNotBoundError, DeviceTimeoutError
+from greeclimate_versati_fork.network import DeviceProtocol2
+from greeclimate_versati_fork.taskable import Taskable
 
 class BaseDevice(DeviceProtocol2, Taskable):
     """Class representing a physical device, it's state and properties.

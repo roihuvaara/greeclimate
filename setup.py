@@ -7,7 +7,7 @@ with open("requirements.txt") as f:
     requirements = f.read().splitlines()
 
 setuptools.setup(
-    name="greeclimate",
+    name="greeclimate_versati_fork",
     python_requires=">=3.8",
     install_requires=requirements,
     author="Clifford Roche",

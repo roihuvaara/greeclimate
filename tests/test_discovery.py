@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
 
-from greeclimate.discovery import Discovery, Listener
+from greeclimate_versati_fork.discovery import Discovery, Listener
 from .common import (
     DEFAULT_TIMEOUT,
     DISCOVERY_REQUEST,

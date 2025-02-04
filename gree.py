@@ -5,8 +5,8 @@ import logging
 
 from aioconsole import ainput
 
-from greeclimate.device import Device, DeviceInfo
-from greeclimate.discovery import Discovery, Listener
+from greeclimate_versati_fork.device import Device, DeviceInfo
+from greeclimate_versati_fork.discovery import Discovery, Listener
 
 logging.basicConfig(
     level=logging.DEBUG, format="%(name)s - %(levelname)s - %(message)s"

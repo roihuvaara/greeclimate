@@ -1,6 +1,6 @@
 import enum
 
-from greeclimate.base_device import BaseDevice
+from greeclimate_versati_fork.base_device import BaseDevice
 
 class AwhpProps(enum.Enum):
     T_WATER_IN_PE_W = "AllInWatTemHi" # Whole number - 100 = temp in celsius
