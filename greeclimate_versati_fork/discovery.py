@@ -7,7 +7,7 @@ from asyncio.events import AbstractEventLoop
 from ipaddress import IPv4Address
 
 from greeclimate_versati_fork.cipher import CipherV1
-from greeclimate_versati_fork.device import DeviceInfo
+from greeclimate_versati_fork.deviceinfo import DeviceInfo
 from greeclimate_versati_fork.network import BroadcastListenerProtocol, IPAddr
 from greeclimate_versati_fork.taskable import Taskable
 

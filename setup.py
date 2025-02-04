@@ -12,6 +12,7 @@ setuptools.setup(
     install_requires=requirements,
     author="Clifford Roche",
     author_email="",
+    version="2.1.2",
     description="Discover, connect and control Gree based minisplit systems",
     long_description=long_description,
     long_description_content_type="text/markdown",

@@ -1,4 +1,5 @@
 import asyncio
+import enum
 import logging
 import re
 from asyncio import AbstractEventLoop
@@ -9,6 +10,38 @@ from greeclimate_versati_fork.deviceinfo import DeviceInfo
 from greeclimate_versati_fork.exceptions import DeviceNotBoundError, DeviceTimeoutError
 from greeclimate_versati_fork.network import DeviceProtocol2
 from greeclimate_versati_fork.taskable import Taskable
+
+TEMP_OFFSET = 40
+
+class Props(enum.Enum):
+    POWER = "Pow"
+    MODE = "Mod"
+
+    # Dehumidifier fields
+    HUM_SET = "Dwet"
+    HUM_SENSOR = "DwatSen"
+    CLEAN_FILTER = "Dfltr"
+    WATER_FULL = "DwatFul"
+    DEHUMIDIFIER_MODE = "Dmod"
+
+    TEMP_SET = "SetTem"
+    TEMP_SENSOR = "TemSen"
+    TEMP_UNIT = "TemUn"
+    TEMP_BIT = "TemRec"
+    FAN_SPEED = "WdSpd"
+    FRESH_AIR = "Air"
+    XFAN = "Blo"
+    ANION = "Health"
+    SLEEP = "SwhSlp"
+    SLEEP_MODE = "SlpMod"
+    LIGHT = "Lig"
+    SWING_HORIZ = "SwingLfRig"
+    SWING_VERT = "SwUpDn"
+    QUIET = "Quiet"
+    TURBO = "Tur"
+    STEADY_HEAT = "StHt"
+    POWER_SAVE = "SvSt"
+    UNKNOWN_HEATCOOLTYPE = "HeatCoolType"
 
 class BaseDevice(DeviceProtocol2, Taskable):
     """Class representing a physical device, it's state and properties.
