@@ -59,40 +59,68 @@ class AwhpProps(enum.Enum):
 class AwhpDevice(BaseDevice):
 
     def _get_celsius(self, whole, decimal) -> float:
+        """Helper to combine temperature values into celsius."""
+        if whole is None or decimal is None:
+            return None
         return whole - 100 + (decimal / 10)
 
-    @property
-    def t_water_in_pe(self) -> float:
+    def t_water_in_pe(self, raw_data: dict = None) -> float:
+        """Get water input temperature."""
+        if raw_data:
+            return self._get_celsius(
+                raw_data.get(AwhpProps.T_WATER_IN_PE_W.value),
+                raw_data.get(AwhpProps.T_WATER_IN_PE_D.value)
+            )
         return self._get_celsius(
-            self.get_property(AwhpProps.T_WATER_IN_PE_W), 
+            self.get_property(AwhpProps.T_WATER_IN_PE_W),
             self.get_property(AwhpProps.T_WATER_IN_PE_D)
         )
     
-    @property
-    def t_water_out_pe(self) -> float:
+    def t_water_out_pe(self, raw_data: dict = None) -> float:
+        """Get water output temperature."""
+        if raw_data:
+            return self._get_celsius(
+                raw_data.get(AwhpProps.T_WATER_OUT_PE_W.value),
+                raw_data.get(AwhpProps.T_WATER_OUT_PE_D.value)
+            )
         return self._get_celsius(
-            self.get_property(AwhpProps.T_WATER_OUT_PE_W), 
+            self.get_property(AwhpProps.T_WATER_OUT_PE_W),
             self.get_property(AwhpProps.T_WATER_OUT_PE_D)
         )
 
-    @property
-    def t_opt_water(self) -> float:
+    def t_opt_water(self, raw_data: dict = None) -> float:
+        """Get optimal water temperature."""
+        if raw_data:
+            return self._get_celsius(
+                raw_data.get("HepOutWatTemHi"),
+                raw_data.get("HepOutWatTemLo")
+            )
         return self._get_celsius(
-            self.get_property(AwhpProps.T_OPT_WATER_W), 
+            self.get_property(AwhpProps.T_OPT_WATER_W),
             self.get_property(AwhpProps.T_OPT_WATER_D)
         )
     
-    @property
-    def hot_water_temp(self) -> float:
+    def hot_water_temp(self, raw_data: dict = None) -> float:
+        """Get hot water temperature."""
+        if raw_data:
+            return self._get_celsius(
+                raw_data.get("WatBoxTemHi"),
+                raw_data.get("WatBoxTemLo")
+            )
         return self._get_celsius(
-            self.get_property(AwhpProps.HOT_WATER_TEMP_W), 
+            self.get_property(AwhpProps.HOT_WATER_TEMP_W),
             self.get_property(AwhpProps.HOT_WATER_TEMP_D)
         )
     
-    @property
-    def remote_home_temp(self) -> float:
+    def remote_home_temp(self, raw_data: dict = None) -> float:
+        """Get remote home temperature."""
+        if raw_data:
+            return self._get_celsius(
+                raw_data.get("RmoHomTemHi"),
+                raw_data.get("RmoHomTemLo")
+            )
         return self._get_celsius(
-            self.get_property(AwhpProps.REMOTE_HOME_TEMP_W), 
+            self.get_property(AwhpProps.REMOTE_HOME_TEMP_W),
             self.get_property(AwhpProps.REMOTE_HOME_TEMP_D)
         )
 
@@ -323,3 +351,46 @@ class AwhpDevice(BaseDevice):
 #    @all_err.setter
 #    def all_err(self, value: int):
 #        self.set_property(AWHPProps.ALL_ERR, int(value))
+
+    async def update_all_properties(self) -> None:
+        """Update all device properties in a single request."""
+        await self.update_state()
+        # After update_state(), all properties are available in self._properties
+        
+    async def get_all_properties(self) -> dict:
+        """Get all properties in a single request and return them."""
+        await self.update_all_properties()
+        return {
+            # Current temperatures (whole numbers)
+            AwhpProps.T_WATER_IN_PE_W.value: self.get_property(AwhpProps.T_WATER_IN_PE_W),
+            AwhpProps.T_WATER_IN_PE_D.value: self.get_property(AwhpProps.T_WATER_IN_PE_D),
+            AwhpProps.T_WATER_OUT_PE_W.value: self.get_property(AwhpProps.T_WATER_OUT_PE_W),
+            AwhpProps.T_WATER_OUT_PE_D.value: self.get_property(AwhpProps.T_WATER_OUT_PE_D),
+            AwhpProps.T_OPT_WATER_W.value: self.get_property(AwhpProps.T_OPT_WATER_W),
+            AwhpProps.T_OPT_WATER_D.value: self.get_property(AwhpProps.T_OPT_WATER_D),
+            AwhpProps.HOT_WATER_TEMP_W.value: self.get_property(AwhpProps.HOT_WATER_TEMP_W),
+            AwhpProps.HOT_WATER_TEMP_D.value: self.get_property(AwhpProps.HOT_WATER_TEMP_D),
+            AwhpProps.REMOTE_HOME_TEMP_W.value: self.get_property(AwhpProps.REMOTE_HOME_TEMP_W),
+            AwhpProps.REMOTE_HOME_TEMP_D.value: self.get_property(AwhpProps.REMOTE_HOME_TEMP_D),
+            
+            # Status indicators
+            AwhpProps.TANK_HEATER_STATUS.value: self.get_property(AwhpProps.TANK_HEATER_STATUS),
+            AwhpProps.SYSTEM_DEFROSTING_STATUS.value: self.get_property(AwhpProps.SYSTEM_DEFROSTING_STATUS),
+            AwhpProps.HP_HEATER_1_STATUS.value: self.get_property(AwhpProps.HP_HEATER_1_STATUS),
+            AwhpProps.HP_HEATER_2_STATUS.value: self.get_property(AwhpProps.HP_HEATER_2_STATUS),
+            AwhpProps.AUTOMATIC_FROST_PROTECTION.value: self.get_property(AwhpProps.AUTOMATIC_FROST_PROTECTION),
+            
+            # Operation settings
+            AwhpProps.POWER.value: self.get_property(AwhpProps.POWER),
+            AwhpProps.MODE.value: self.get_property(AwhpProps.MODE),
+            AwhpProps.COOL_TEMP_SET.value: self.get_property(AwhpProps.COOL_TEMP_SET),
+            AwhpProps.HEAT_TEMP_SET.value: self.get_property(AwhpProps.HEAT_TEMP_SET),
+            AwhpProps.HOT_WATER_TEMP_SET.value: self.get_property(AwhpProps.HOT_WATER_TEMP_SET),
+            
+            # Other settings
+            AwhpProps.FAST_HEAT_WATER.value: self.get_property(AwhpProps.FAST_HEAT_WATER),
+            AwhpProps.QUIET.value: self.get_property(AwhpProps.QUIET),
+            AwhpProps.LEFT_HOME.value: self.get_property(AwhpProps.LEFT_HOME),
+            AwhpProps.DISINFECT.value: self.get_property(AwhpProps.DISINFECT),
+            AwhpProps.POWER_SAVE.value: self.get_property(AwhpProps.POWER_SAVE),
+        }
