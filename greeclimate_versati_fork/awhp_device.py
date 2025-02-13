@@ -393,4 +393,7 @@ class AwhpDevice(BaseDevice):
             AwhpProps.LEFT_HOME.value: self.get_property(AwhpProps.LEFT_HOME),
             AwhpProps.DISINFECT.value: self.get_property(AwhpProps.DISINFECT),
             AwhpProps.POWER_SAVE.value: self.get_property(AwhpProps.POWER_SAVE),
+
+            AwhpProps.VERSATI_SERIES.value: self.get_property(AwhpProps.VERSATI_SERIES),
+
         }
