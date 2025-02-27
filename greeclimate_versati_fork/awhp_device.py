@@ -413,12 +413,12 @@ class AwhpDevice(BaseDevice):
             props.append("hid")
 
         try:
-            LOGGER.debug(f"Requesting properties: {props}")
+            self._logger.debug(f"Requesting properties: {props}")
             await self.send(self.create_status_message(self.device_info, *props))
-            LOGGER.debug(f"Request sent successfully")
+            self._logger.debug(f"Request sent successfully")
         except asyncio.TimeoutError:
-            LOGGER.error("Timeout while requesting device state")
+            self._logger.error("Timeout while requesting device state")
             raise DeviceTimeoutError
         except Exception as e:
-            LOGGER.error(f"Error updating state: {e}")
+            self._logger.error(f"Error updating state: {e}")
             raise
