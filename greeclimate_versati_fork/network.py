@@ -219,6 +219,8 @@ class DeviceProtocol2(DeviceProtocolBase2):
             obj (JSON): Json object with decoded UDP data
             addr (IPAddr): Endpoint address of the sender
         """
+        _LOGGER.debug(f"Packet received from {addr}: {obj}")
+
         params = {
             Response.BIND_OK.value: lambda o, a: [o["pack"]["key"]],
             Response.DATA.value: lambda o, a: [dict(zip(o["pack"]["cols"], o["pack"]["dat"]))],
@@ -231,8 +233,14 @@ class DeviceProtocol2(DeviceProtocolBase2):
         }
         try:
             resp = obj.get("pack", {}).get("t")
+            _LOGGER.debug(f"Response type: {resp}")
+
             handler = handlers.get(resp, self.handle_unknown_packet)
+            _LOGGER.debug(f"Using handler: {handler}")
+
             param = params.get(resp, lambda o, a: (o, a))(obj, addr)
+            _LOGGER.debug(f"Parsed parameters: {param}")
+
             handler(*param)
         except AttributeError as e:
             _LOGGER.exception("Error while handling packet", exc_info=e)
