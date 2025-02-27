@@ -415,6 +415,12 @@ class AwhpDevice(BaseDevice):
         try:
             self._logger.debug(f"Requesting properties: {props}")
             await self.send(self.create_status_message(self.device_info, *props))
+
+            if wait_for > 0:
+                # Wait for the response
+                task = asyncio.create_task(self.ready.wait())
+                await asyncio.wait_for(task, timeout=wait_for)
+
             self._logger.debug(f"Current device properties: {self._properties}")
             
         except asyncio.TimeoutError:
