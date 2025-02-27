@@ -1,4 +1,5 @@
 import enum
+import asyncio
 
 from greeclimate_versati_fork.base_device import BaseDevice
 
@@ -57,6 +58,7 @@ class AwhpProps(enum.Enum):
     EVU = "EVU" # 0
 
 class AwhpDevice(BaseDevice):
+    """Device class for Air-Water Heat Pump."""
 
     def _get_celsius(self, whole, decimal) -> float:
         """Helper to combine temperature values into celsius."""
@@ -397,3 +399,26 @@ class AwhpDevice(BaseDevice):
             AwhpProps.VERSATI_SERIES.value: self.get_property(AwhpProps.VERSATI_SERIES),
 
         }
+
+    async def update_state(self, wait_for: float = 30):
+        """Update the internal state of the device."""
+        if not self.device_cipher:
+            await self.bind()
+
+        self._logger.debug("Updating AWHP device properties for (%s)", str(self.device_info))
+
+        # Get all the property values we want to request
+        props = [x.value for x in AwhpProps]
+        if not self.hid:
+            props.append("hid")
+
+        try:
+            LOGGER.debug(f"Requesting properties: {props}")
+            await self.send(self.create_status_message(self.device_info, *props))
+            LOGGER.debug(f"Request sent successfully")
+        except asyncio.TimeoutError:
+            LOGGER.error("Timeout while requesting device state")
+            raise DeviceTimeoutError
+        except Exception as e:
+            LOGGER.error(f"Error updating state: {e}")
+            raise
