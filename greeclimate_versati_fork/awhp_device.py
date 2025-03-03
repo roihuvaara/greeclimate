@@ -414,18 +414,25 @@ class AwhpDevice(BaseDevice):
 
         try:
             self._logger.debug(f"Requesting properties: {props}")
-            await self.send(self.create_status_message(self.device_info, *props))
-
-            if wait_for > 0:
-                # Wait for the response
-                task = asyncio.create_task(self.ready.wait())
-                await asyncio.wait_for(task, timeout=wait_for)
-
-            self._logger.debug(f"Current device properties: {self._properties}")
+            message = self.create_status_message(self.device_info, *props)
+            self._logger.debug(f"Status message created: {message}")
+            
+            # Reset properties before update
+            self._properties = {}
+            self._logger.debug("Properties reset before update")
+            
+            # Create and wait for the send task
+            task = asyncio.create_task(self.send(message))
+            await asyncio.wait_for(task, timeout=wait_for)
+            
+            self._logger.debug("Request sent, waiting for response...")
+            await asyncio.sleep(3)  # Give device time to respond
+            
+            self._logger.debug(f"Current device properties after update: {self._properties}")
             
         except asyncio.TimeoutError:
             self._logger.error("Timeout while requesting device state")
             raise DeviceTimeoutError
         except Exception as e:
-            self._logger.error(f"Error updating state: {e}")
+            self._logger.error(f"Error updating state: {e}", exc_info=True)
             raise

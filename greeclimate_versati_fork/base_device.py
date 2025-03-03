@@ -290,4 +290,18 @@ class BaseDevice(DeviceProtocol2, Taskable):
             if name.value not in self._dirty:
                 self._dirty.append(name.value)
 
+    def create_status_message(self, device_info: DeviceInfo, *args) -> dict:
+        """Create a status request message."""
+        self._logger.debug(f"Creating status message with args: {args}")
+        message = {
+            "cid": "app",
+            "i": 0,
+            "t": "pack",
+            "uid": 0,
+            "tcid": device_info.mac,
+            "pack": {"mac": device_info.mac, "t": "status", "cols": list(args)},
+        }
+        self._logger.debug(f"Created status message: {message}")
+        return message
+
     
