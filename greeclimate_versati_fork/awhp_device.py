@@ -448,3 +448,37 @@ class AwhpDevice(BaseDevice):
                 self._logger.info(f"Device version changed to {self.version}, hid {self.hid}")
             self._logger.debug(f"Using device temperature {self.current_temperature}")
         """
+
+    async def push_state_update(self, wait_for: float = 30):
+        """Push any pending state updates to the unit
+
+        Args:
+            wait_for (object): How long to wait for an update from the device, 0 for no wait
+        """
+        if not self._dirty:
+            return
+
+        if not self.device_cipher:
+            await self.bind()
+
+        self._logger.debug("Pushing state updates to (%s)", str(self.device_info))
+
+        props = {}
+        for name in self._dirty:
+            value = self._properties.get(name)
+            self._logger.debug("Sending remote state update %s -> %s", name, value)
+            props[name] = value
+            """
+            if name == Props.TEMP_SET.value:
+                props[Props.TEMP_BIT.value] = self._properties.get(Props.TEMP_BIT.value)
+                props[Props.TEMP_UNIT.value] = self._properties.get(
+                    Props.TEMP_UNIT.value
+                )
+            """
+        self._dirty.clear()
+
+        try:
+            await self.send(self.create_command_message(self.device_info, **props))
+
+        except asyncio.TimeoutError:
+            raise DeviceTimeoutError

@@ -1,7 +1,5 @@
 import asyncio
-import enum
 import logging
-import re
 from asyncio import AbstractEventLoop
 from typing import Union
 
@@ -13,35 +11,7 @@ from greeclimate_versati_fork.taskable import Taskable
 
 TEMP_OFFSET = 40
 
-class Props(enum.Enum):
-    POWER = "Pow"
-    MODE = "Mod"
 
-    # Dehumidifier fields
-    HUM_SET = "Dwet"
-    HUM_SENSOR = "DwatSen"
-    CLEAN_FILTER = "Dfltr"
-    WATER_FULL = "DwatFul"
-    DEHUMIDIFIER_MODE = "Dmod"
-
-    TEMP_SET = "SetTem"
-    TEMP_SENSOR = "TemSen"
-    TEMP_UNIT = "TemUn"
-    TEMP_BIT = "TemRec"
-    FAN_SPEED = "WdSpd"
-    FRESH_AIR = "Air"
-    XFAN = "Blo"
-    ANION = "Health"
-    SLEEP = "SwhSlp"
-    SLEEP_MODE = "SlpMod"
-    LIGHT = "Lig"
-    SWING_HORIZ = "SwingLfRig"
-    SWING_VERT = "SwUpDn"
-    QUIET = "Quiet"
-    TURBO = "Tur"
-    STEADY_HEAT = "StHt"
-    POWER_SAVE = "SvSt"
-    UNKNOWN_HEATCOOLTYPE = "HeatCoolType"
 
 class BaseDevice(DeviceProtocol2, Taskable):
     """Class representing a physical device, it's state and properties.
@@ -52,29 +22,6 @@ class BaseDevice(DeviceProtocol2, Taskable):
 
     Once a device is bound occasionally call `update_state` to request and update state from
     the HVAC, as it is possible that it changes state from other sources.
-
-    Attributes:
-        power: A boolean indicating if the unit is on or off
-        mode: An int indicating operating mode, see `Mode` enum for possible values
-        target_temperature: The target temperature, ignore if in Auto, Fan or Steady Heat mode
-        temperature_units: An int indicating unit of measurement, see `TemperatureUnits` enum for possible values
-        current_temperature: The current temperature
-        fan_speed: An int indicating fan speed, see `FanSpeed` enum for possible values
-        fresh_air: A boolean indicating if fresh air valve is open, if present
-        xfan: A boolean to enable the fan to dry the coil, only used for cool and dry modes
-        anion: A boolean to enable the ozone generator, if present
-        sleep: A boolean to enable sleep mode, which adjusts temperature over time
-        light: A boolean to enable the light on the unit, if present
-        horizontal_swing: An int to control the horizontal blade position, see `HorizontalSwing` enum for possible values
-        vertical_swing: An int to control the vertical blade position, see `VerticalSwing` enum for possible values
-        quiet: A boolean to enable quiet operation
-        turbo: A boolean to enable turbo operation (heat or cool faster initially)
-        steady_heat: When enabled unit will maintain a target temperature of 8 degrees C
-        power_save: A boolen to enable power save operation
-        target_humidity: An int to set the target relative humidity
-        current_humidity: The current relative humidity
-        clean_filter: A bool to indicate the filter needs cleaning
-        water_full: A bool to indicate the water tank is full
     """
 
     def __init__(self, device_info: DeviceInfo, timeout: int = 120, bind_timeout: int = 10, loop: AbstractEventLoop = None):
@@ -184,81 +131,6 @@ class BaseDevice(DeviceProtocol2, Taskable):
         except asyncio.TimeoutError:
             raise DeviceTimeoutError
 
-    async def update_state(self, wait_for: float = 30):
-        """Update the internal state of the device structure of the physical device, 0 for no wait
-
-        Args:
-            wait_for (object): How long to wait for an update from the device
-        """
-        if not self.device_cipher:
-            await self.bind()
-
-        self._logger.debug("Updating device properties for (%s)", str(self.device_info))
-
-        props = [x.value for x in Props]
-        if not self.hid:
-            props.append("hid")
-
-        try:
-            await self.send(self.create_status_message(self.device_info, *props))
-
-        except asyncio.TimeoutError:
-            raise DeviceTimeoutError
-
-    def handle_state_update(self, **kwargs) -> None:
-        """Handle incoming information about the firmware version of the device"""
-
-        # Ex: hid = 362001000762+U-CS532AE(LT)V3.31.bin
-        if "hid" in kwargs:
-            self.hid = kwargs.pop("hid")
-            match = re.search(r"(?<=V)([\d.]+)\.bin$", self.hid)
-            self.version = match and match.group(1)
-            self._logger.info(f"Device version is {self.version}, hid {self.hid}")
-
-        self._properties.update(kwargs)
-
-        if self.check_version and Props.TEMP_SENSOR.value in kwargs:
-            self.check_version = False
-            temp = self.get_property(Props.TEMP_SENSOR)
-            self._logger.debug(f"Checking for temperature offset, reported temp {temp}")
-            if temp and temp < TEMP_OFFSET:
-                self.version = "4.0"
-                self._logger.info(f"Device version changed to {self.version}, hid {self.hid}")
-            self._logger.debug(f"Using device temperature {self.current_temperature}")
-
-    async def push_state_update(self, wait_for: float = 30):
-        """Push any pending state updates to the unit
-
-        Args:
-            wait_for (object): How long to wait for an update from the device, 0 for no wait
-        """
-        if not self._dirty:
-            return
-
-        if not self.device_cipher:
-            await self.bind()
-
-        self._logger.debug("Pushing state updates to (%s)", str(self.device_info))
-
-        props = {}
-        for name in self._dirty:
-            value = self._properties.get(name)
-            self._logger.debug("Sending remote state update %s -> %s", name, value)
-            props[name] = value
-            if name == Props.TEMP_SET.value:
-                props[Props.TEMP_BIT.value] = self._properties.get(Props.TEMP_BIT.value)
-                props[Props.TEMP_UNIT.value] = self._properties.get(
-                    Props.TEMP_UNIT.value
-                )
-
-        self._dirty.clear()
-
-        try:
-            await self.send(self.create_command_message(self.device_info, **props))
-
-        except asyncio.TimeoutError:
-            raise DeviceTimeoutError
-
     def __eq__(self, other):
         """Compare two devices for equality based on their properties state and device info."""
         return self.device_info == other.device_info \
@@ -303,5 +175,3 @@ class BaseDevice(DeviceProtocol2, Taskable):
         }
         self._logger.debug(f"Created status message: {message}")
         return message
-
-    
