@@ -35,8 +35,8 @@ class AwhpProps(enum.Enum):
     COOL_AND_HOT_WATER = "ColHtWter" # 1
     HEAT_AND_HOT_WATER = "HetHtWter" # 1
     #TEMP_REC_B = "TemRecB" # 0
-    #COOL_HOME_TEMP_SET = "CoHomTemSet" # 24
-    #HEAT_HOME_TEMP_SET = "HeHomTemSet" # 25
+    COOL_HOME_TEMP_SET = "CoHomTemSet" # 24
+    HEAT_HOME_TEMP_SET = "HeHomTemSet" # 25
     
     FAST_HEAT_WATER = "FastHtWter" # 0
     QUIET = "Quiet" # 0
@@ -376,15 +376,27 @@ class AwhpDevice(BaseDevice):
 
         self._logger.debug("Updating AWHP device properties for (%s)", str(self.device_info))
 
-        # Get all the property values we want to request
-        props = [x.value for x in AwhpProps]
+        # Get all properties from the enum
+        all_props = [prop.value for prop in AwhpProps]
         if not self.hid:
-            props.append("hid")
+            all_props.append("hid")
 
+
+        
+        # Split into batches of 20 properties
+        batch_size = 20
+        property_batches = [all_props[i:i + batch_size] for i in range(0, len(all_props), batch_size)]
+        
+        self._logger.debug(f"Split properties into {len(property_batches)} batches")
+        
         try:
-            self._logger.debug(f"Requesting properties: {props}")
-            res = await self.send(self.create_status_message(self.device_info, *props))
-            self._logger.debug(f"Received response: {res}")
+            for i, batch in enumerate(property_batches):
+                self._logger.debug(f"Requesting batch {i+1}/{len(property_batches)}: {batch}")
+                res = await self.send(self.create_status_message(self.device_info, *batch))
+                self._logger.debug(f"Received response: {res}")
+                
+            self._logger.debug(f"All batches complete. Current device properties: {self._properties}")
+            
         except asyncio.TimeoutError:
             self._logger.error("Timeout while requesting device state")
             raise DeviceTimeoutError
