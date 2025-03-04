@@ -22,7 +22,6 @@ class AwhpProps(enum.Enum):
     HP_HEATER_1_STATUS = "ElcHe1RunSta"
     HP_HEATER_2_STATUS = "ElcHe2RunSta"
     AUTOMATIC_FROST_PROTECTION = "AnFrzzRunSta"
-    # HOT_WATER_EXT = "WatBoxExt"
     
     POWER = "Pow" # 1
     MODE = "Mod"  # 4
@@ -39,7 +38,7 @@ class AwhpProps(enum.Enum):
     COOL_HOME_TEMP_SET = "CoHomTemSet" # 24
     HEAT_HOME_TEMP_SET = "HeHomTemSet" # 25
     
-    #FAST_HEAT_WATER = "FastHtWter" # 0
+    FAST_HEAT_WATER = "FastHtWter" # 0
     QUIET = "Quiet" # 0
     LEFT_HOME = "LefHom" # 0
     DISINFECT = "SwDisFct" # Maybe Disinfect?
@@ -48,9 +47,9 @@ class AwhpProps(enum.Enum):
     VERSATI_SERIES = "VersatiSeries" # 0
     ROOM_HOME_TEMP_EXT = "RomHomTemExt" # 0
     HOT_WATER_EXT = "WatBoxExt" # 0
-    FOC_MOD_SWH = "FocModSwh" # 0
-    EMEGCY = "Emegcy" # 0
-    HAND_FRO_SWH = "HanFroSwh" # 0
+    #FOC_MOD_SWH = "FocModSwh" # 0
+    #EMEGCY = "Emegcy" # 0
+    #HAND_FRO_SWH = "HanFroSwh" # 0
     #WATER_SYS_EXH_SWH = "WatSyExhSwh" # 0
     #BORD_TEST = "BordTest" # 0
     #COL_COLET_SWH = "ColColetSwh" # 0
