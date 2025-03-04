@@ -415,7 +415,22 @@ class AwhpDevice(BaseDevice):
         #if not self.hid:
         #    props.append("hid")
 
-        props = ["Pow", "AllOutWatTemHi", "AllOutWatTemLo", "hid"]
+        # Gradually expanded set of essential properties
+        props = [
+            # Basic operation
+            "Pow",  # Power state
+            "Mod",  # Mode
+            
+            # Temperature readings
+            "AllOutWatTemHi", "AllOutWatTemLo",  # Output water temp
+            "AllInWatTemHi", "AllInWatTemLo",    # Input water temp
+            "WatBoxTemHi", "WatBoxTemLo",        # Hot water temp
+            
+            # Temperature settings
+            "HeWatOutTemSet",  # Heating temp setting
+            "WatBoxTemSet",    # Hot water temp setting
+            "hid"
+        ]
 
         try:
             self._logger.debug(f"Requesting properties: {props}")
