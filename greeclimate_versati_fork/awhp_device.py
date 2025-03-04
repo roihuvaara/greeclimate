@@ -411,13 +411,16 @@ class AwhpDevice(BaseDevice):
         self._logger.debug("Updating AWHP device properties for (%s)", str(self.device_info))
 
         # Get all the property values we want to request
-        props = [x.value for x in AwhpProps]
-        if not self.hid:
-            props.append("hid")
+        #props = [x.value for x in AwhpProps]
+        #if not self.hid:
+        #    props.append("hid")
+
+        props = ["Pow", "AllOutWatTemHi", "AllOutWatTemLo"]
 
         try:
             self._logger.debug(f"Requesting properties: {props}")
-            await self.send(self.create_status_message(self.device_info, *props))
+            res = await self.send(self.create_status_message(self.device_info, *props))
+            self._logger.debug(f"Received response: {res}")
         except asyncio.TimeoutError:
             self._logger.error("Timeout while requesting device state")
             raise DeviceTimeoutError
