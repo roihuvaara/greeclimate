@@ -383,8 +383,8 @@ class AwhpDevice(BaseDevice):
 
 
         
-        # Split into batches of 20 properties
-        batch_size = 20
+        # Split into batches of 23 properties to get all properties in 2 calls
+        batch_size = 23
         property_batches = [all_props[i:i + batch_size] for i in range(0, len(all_props), batch_size)]
         
         self._logger.debug(f"Split properties into {len(property_batches)} batches")
