@@ -2,6 +2,8 @@ import enum
 import asyncio
 
 from greeclimate_versati_fork.base_device import BaseDevice
+from greeclimate_versati_fork.exceptions import DeviceTimeoutError
+
 
 class AwhpProps(enum.Enum):
     T_WATER_IN_PE_W = "AllInWatTemHi" # Whole number - 100 = temp in celsius
@@ -414,22 +416,7 @@ class AwhpDevice(BaseDevice):
 
         try:
             self._logger.debug(f"Requesting properties: {props}")
-            message = self.create_status_message(self.device_info, *props)
-            self._logger.debug(f"Status message created: {message}")
-            
-            # Reset properties before update
-            self._properties = {}
-            self._logger.debug("Properties reset before update")
-            
-            # Create and wait for the send task
-            task = asyncio.create_task(self.send(message))
-            await asyncio.wait_for(task, timeout=wait_for)
-            
-            self._logger.debug("Request sent, waiting for response...")
-            await asyncio.sleep(3)  # Give device time to respond
-            
-            self._logger.debug(f"Current device properties after update: {self._properties}")
-            
+            await self.send(self.create_status_message(self.device_info, *props))
         except asyncio.TimeoutError:
             self._logger.error("Timeout while requesting device state")
             raise DeviceTimeoutError
