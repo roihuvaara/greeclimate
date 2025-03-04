@@ -35,8 +35,8 @@ class AwhpProps(enum.Enum):
     COOL_AND_HOT_WATER = "ColHtWter" # 1
     HEAT_AND_HOT_WATER = "HetHtWter" # 1
     #TEMP_REC_B = "TemRecB" # 0
-    COOL_HOME_TEMP_SET = "CoHomTemSet" # 24
-    HEAT_HOME_TEMP_SET = "HeHomTemSet" # 25
+    #COOL_HOME_TEMP_SET = "CoHomTemSet" # 24
+    #HEAT_HOME_TEMP_SET = "HeHomTemSet" # 25
     
     FAST_HEAT_WATER = "FastHtWter" # 0
     QUIET = "Quiet" # 0
