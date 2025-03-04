@@ -425,10 +425,29 @@ class AwhpDevice(BaseDevice):
             "AllOutWatTemHi", "AllOutWatTemLo",  # Output water temp
             "AllInWatTemHi", "AllInWatTemLo",    # Input water temp
             "WatBoxTemHi", "WatBoxTemLo",        # Hot water temp
+            "HepOutWatTemHi", "HepOutWatTemLo",  # Optimal water temp
+            "RmoHomTemHi", "RmoHomTemLo",        # Remote home temp
             
             # Temperature settings
             "HeWatOutTemSet",  # Heating temp setting
             "WatBoxTemSet",    # Hot water temp setting
+            "CoWatOutTemSet",  # Cooling temp setting
+            
+            # Status indicators
+            "WatBoxElcHeRunSta",  # Tank heater status
+            "SyAnFroRunSta",      # System defrosting status
+            "ElcHe1RunSta",       # HP heater 1 status
+            "ElcHe2RunSta",       # HP heater 2 status
+            "AnFrzzRunSta",       # Auto frost protection
+            
+            # Operation modes
+            "FastHtWter",     # Fast heat water
+            "ColHtWter",      # Cool and hot water
+            "HetHtWter",      # Heat and hot water
+            "Quiet",          # Quiet mode
+            "LefHom",         # Left home
+            "SwDisFct",       # Disinfect
+            "SvSt",           # Power save
             "hid"
         ]
 
