@@ -127,16 +127,28 @@ class DeviceProtocolBase2(asyncio.DatagramProtocol):
 
     def datagram_received(self, data: bytes, addr: IPAddr) -> None:
         """Handle an incoming datagram."""
+        _LOGGER.debug(f"Raw datagram received from {addr}: {data[:100]}...")  # Log first 100 bytes to avoid huge logs
+        
         if len(data) == 0:
+            _LOGGER.warning("Received empty datagram")
             return
 
-        obj = json.loads(data)
+        try:
+            obj = json.loads(data)
+            _LOGGER.debug(f"Decoded JSON: {obj}")
 
-        if obj.get("pack"):
-            obj["pack"] = self._cipher.decrypt(obj["pack"])
+            if obj.get("pack"):
+                _LOGGER.debug("Attempting to decrypt pack")
+                obj["pack"] = self._cipher.decrypt(obj["pack"])
+                _LOGGER.debug(f"Decrypted pack: {obj['pack']}")
 
-        _LOGGER.debug("Received packet from %s:\n<- %s", addr[0], json.dumps(obj))
-        self.packet_received(obj, addr)
+            _LOGGER.debug("Received packet from %s:\n<- %s", addr[0], json.dumps(obj))
+            self.packet_received(obj, addr)
+            
+        except json.JSONDecodeError as e:
+            _LOGGER.error(f"Failed to decode JSON from datagram: {e}")
+        except Exception as e:
+            _LOGGER.error(f"Error processing datagram: {e}", exc_info=True)
 
     async def send(self, obj, addr: IPAddr = None, cipher: Union[CipherBase, None] = None) -> None:
         """Send encode and send JSON command to the device.
