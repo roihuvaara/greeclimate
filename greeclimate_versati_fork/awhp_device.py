@@ -415,7 +415,7 @@ class AwhpDevice(BaseDevice):
         #if not self.hid:
         #    props.append("hid")
 
-        props = ["Pow", "AllOutWatTemHi", "AllOutWatTemLo"]
+        props = ["Pow", "AllOutWatTemHi", "AllOutWatTemLo", "hid"]
 
         try:
             self._logger.debug(f"Requesting properties: {props}")
