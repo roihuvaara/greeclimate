@@ -1,5 +1,6 @@
 import enum
 import asyncio
+import re
 
 from greeclimate_versati_fork.base_device import BaseDevice
 from greeclimate_versati_fork.exceptions import DeviceTimeoutError
@@ -423,3 +424,27 @@ class AwhpDevice(BaseDevice):
         except Exception as e:
             self._logger.error(f"Error updating state: {e}", exc_info=True)
             raise
+
+    def handle_state_update(self, **kwargs) -> None:
+        """Handle incoming information about the firmware version of the device"""
+        self._logger.debug("Received state update: %s", kwargs)
+
+        # Ex: hid = 362001000762+U-CS532AE(LT)V3.31.bin
+        if "hid" in kwargs:
+            self.hid = kwargs.pop("hid")
+            match = re.search(r"(?<=V)([\d.]+)\.bin$", self.hid)
+            self.version = match and match.group(1)
+            self._logger.info(f"Device version is {self.version}, hid {self.hid}")
+
+        self._properties.update(kwargs)
+
+        """
+        if self.check_version and Props.TEMP_SENSOR.value in kwargs:
+            self.check_version = False
+            temp = self.get_property(Props.TEMP_SENSOR)
+            self._logger.debug(f"Checking for temperature offset, reported temp {temp}")
+            if temp and temp < TEMP_OFFSET:
+                self.version = "4.0"
+                self._logger.info(f"Device version changed to {self.version}, hid {self.hid}")
+            self._logger.debug(f"Using device temperature {self.current_temperature}")
+        """
