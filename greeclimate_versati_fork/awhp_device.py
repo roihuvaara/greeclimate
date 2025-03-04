@@ -45,12 +45,12 @@ class AwhpProps(enum.Enum):
 
     POWER_SAVE = "SvSt" # 0
     VERSATI_SERIES = "VersatiSeries" # 0
-    #ROOM_HOME_TEMP_EXT = "RomHomTemExt" # 0
-    #HOT_WATER_EXT = "WatBoxExt" # 0
-    #FOC_MOD_SWH = "FocModSwh" # 0
-    #EMEGCY = "Emegcy" # 0
-    #HAND_FRO_SWH = "HanFroSwh" # 0
-    #WATER_SYS_EXH_SWH = "WatSyExhSwh" # 0
+    #ROOM_HOME_TEMP_EXT = "RomHomTemExt" # 0 <- invalid?
+    HOT_WATER_EXT = "WatBoxExt" # 0
+    FOC_MOD_SWH = "FocModSwh" # 0
+    EMEGCY = "Emegcy" # 0
+    HAND_FRO_SWH = "HanFroSwh" # 0
+    WATER_SYS_EXH_SWH = "WatSyExhSwh" # 0
     #BORD_TEST = "BordTest" # 0
     #COL_COLET_SWH = "ColColetSwh" # 0
     #END_TEMP_COT_SWH = "EndTemCotSwh" # 0
