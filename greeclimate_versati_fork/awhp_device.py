@@ -47,18 +47,18 @@ class AwhpProps(enum.Enum):
     DISINFECT = "SwDisFct" # Maybe Disinfect?
 
     POWER_SAVE = "SvSt" # 0
-    VERSATI_SERIES = "VersatiSeries" # 0
-    ROOM_HOME_TEMP_EXT = "RomHomTemExt" # 0
-    HOT_WATER_EXT = "WatBoxExt" # 0
-    FOC_MOD_SWH = "FocModSwh" # 0
-    EMEGCY = "Emegcy" # 0
-    HAND_FRO_SWH = "HanFroSwh" # 0
-    WATER_SYS_EXH_SWH = "WatSyExhSwh" # 0
-    BORD_TEST = "BordTest" # 0
-    COL_COLET_SWH = "ColColetSwh" # 0
-    END_TEMP_COT_SWH = "EndTemCotSwh" # 0
-    MODEL_TYPE = "ModelType" # 0
-    EVU = "EVU" # 0
+    # VERSATI_SERIES = "VersatiSeries" # 0
+    # ROOM_HOME_TEMP_EXT = "RomHomTemExt" # 0
+    # HOT_WATER_EXT = "WatBoxExt" # 0
+    # FOC_MOD_SWH = "FocModSwh" # 0
+    # EMEGCY = "Emegcy" # 0
+    # HAND_FRO_SWH = "HanFroSwh" # 0
+    # WATER_SYS_EXH_SWH = "WatSyExhSwh" # 0
+    # BORD_TEST = "BordTest" # 0
+    # COL_COLET_SWH = "ColColetSwh" # 0
+    # END_TEMP_COT_SWH = "EndTemCotSwh" # 0
+    # MODEL_TYPE = "ModelType" # 0
+    # EVU = "EVU" # 0
 
 class AwhpDevice(BaseDevice):
     """Device class for Air-Water Heat Pump."""
@@ -399,7 +399,8 @@ class AwhpDevice(BaseDevice):
             AwhpProps.DISINFECT.value: self.get_property(AwhpProps.DISINFECT),
             AwhpProps.POWER_SAVE.value: self.get_property(AwhpProps.POWER_SAVE),
 
-            AwhpProps.VERSATI_SERIES.value: self.get_property(AwhpProps.VERSATI_SERIES),
+            # Comment out untested properties
+            # AwhpProps.VERSATI_SERIES.value: self.get_property(AwhpProps.VERSATI_SERIES),
 
         }
 
@@ -411,45 +412,9 @@ class AwhpDevice(BaseDevice):
         self._logger.debug("Updating AWHP device properties for (%s)", str(self.device_info))
 
         # Get all the property values we want to request
-        #props = [x.value for x in AwhpProps]
-        #if not self.hid:
-        #    props.append("hid")
-
-        # Gradually expanded set of essential properties
-        props = [
-            # Basic operation
-            "Pow",  # Power state
-            "Mod",  # Mode
-            
-            # Temperature readings
-            "AllOutWatTemHi", "AllOutWatTemLo",  # Output water temp
-            "AllInWatTemHi", "AllInWatTemLo",    # Input water temp
-            "WatBoxTemHi", "WatBoxTemLo",        # Hot water temp
-            "HepOutWatTemHi", "HepOutWatTemLo",  # Optimal water temp
-            "RmoHomTemHi", "RmoHomTemLo",        # Remote home temp
-            
-            # Temperature settings
-            "HeWatOutTemSet",  # Heating temp setting
-            "WatBoxTemSet",    # Hot water temp setting
-            "CoWatOutTemSet",  # Cooling temp setting
-            
-            # Status indicators
-            "WatBoxElcHeRunSta",  # Tank heater status
-            "SyAnFroRunSta",      # System defrosting status
-            "ElcHe1RunSta",       # HP heater 1 status
-            "ElcHe2RunSta",       # HP heater 2 status
-            "AnFrzzRunSta",       # Auto frost protection
-            
-            # Operation modes
-            "FastHtWter",     # Fast heat water
-            "ColHtWter",      # Cool and hot water
-            "HetHtWter",      # Heat and hot water
-            "Quiet",          # Quiet mode
-            "LefHom",         # Left home
-            "SwDisFct",       # Disinfect
-            "SvSt",           # Power save
-            "hid"
-        ]
+        props = [x.value for x in AwhpProps]
+        if not self.hid:
+            props.append("hid")
 
         try:
             self._logger.debug(f"Requesting properties: {props}")
