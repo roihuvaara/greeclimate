@@ -28,13 +28,13 @@ class AwhpProps(enum.Enum):
     COOL_TEMP_SET = "CoWatOutTemSet" # 18
     HEAT_TEMP_SET = "HeWatOutTemSet" # 33
     HOT_WATER_TEMP_SET = "WatBoxTemSet" # 55
-    #TEMP_UNIT = "TemUn" # 0
-    #TEMP_REC = "TemRec" # 0
-    #ALL_ERR = "AllErr" # 0
+    TEMP_UNIT = "TemUn" # 0
+    TEMP_REC = "TemRec" # 0
+    ALL_ERR = "AllErr" # 0
 
     COOL_AND_HOT_WATER = "ColHtWter" # 1
     HEAT_AND_HOT_WATER = "HetHtWter" # 1
-    #TEMP_REC_B = "TemRecB" # 0
+    TEMP_REC_B = "TemRecB" # 0
     COOL_HOME_TEMP_SET = "CoHomTemSet" # 24
     HEAT_HOME_TEMP_SET = "HeHomTemSet" # 25
     
@@ -45,17 +45,17 @@ class AwhpProps(enum.Enum):
 
     POWER_SAVE = "SvSt" # 0
     VERSATI_SERIES = "VersatiSeries" # 0
-    #ROOM_HOME_TEMP_EXT = "RomHomTemExt" # 0 <- invalid?
+    ROOM_HOME_TEMP_EXT = "RomHomTemExt" # 0
     HOT_WATER_EXT = "WatBoxExt" # 0
     FOC_MOD_SWH = "FocModSwh" # 0
-    #EMEGCY = "Emegcy" # 0
-    #HAND_FRO_SWH = "HanFroSwh" # 0
-    #WATER_SYS_EXH_SWH = "WatSyExhSwh" # 0
-    #BORD_TEST = "BordTest" # 0
-    #COL_COLET_SWH = "ColColetSwh" # 0
-    #END_TEMP_COT_SWH = "EndTemCotSwh" # 0
-    #MODEL_TYPE = "ModelType" # 0
-    #EVU = "EVU" # 0
+    EMEGCY = "Emegcy" # 0
+    HAND_FRO_SWH = "HanFroSwh" # 0
+    WATER_SYS_EXH_SWH = "WatSyExhSwh" # 0
+    BORD_TEST = "BordTest" # 0
+    COL_COLET_SWH = "ColColetSwh" # 0
+    END_TEMP_COT_SWH = "EndTemCotSwh" # 0
+    MODEL_TYPE = "ModelType" # 0
+    EVU = "EVU" # 0
 
 class AwhpDevice(BaseDevice):
     """Device class for Air-Water Heat Pump."""
@@ -258,17 +258,17 @@ class AwhpDevice(BaseDevice):
 #    def emegcy(self, value: bool):
 #        self.set_property(AWHPProps.EMEGCY, int(value))
 
-    # @property
-    # def hand_fro_swh(self) -> bool:
-    #     return bool(self.get_property(AwhpProps.HAND_FRO_SWH))
+    @property
+    def hand_fro_swh(self) -> bool:
+        return bool(self.get_property(AwhpProps.HAND_FRO_SWH))
     
 #    @hand_fro_swh.setter
 #    def hand_fro_swh(self, value: bool):
 #        self.set_property(AWHPProps.HAND_FRO_SWH, int(value))
 
-    # @property
-    # def water_sys_exh_swh(self) -> bool:
-    #     return bool(self.get_property(AwhpProps.WATER_SYS_EXH_SWH))
+    @property
+    def water_sys_exh_swh(self) -> bool:
+        return bool(self.get_property(AwhpProps.WATER_SYS_EXH_SWH))
     
 #    @water_sys_exh_swh.setter
 #    def water_sys_exh_swh(self, value: bool):
