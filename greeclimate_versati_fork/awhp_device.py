@@ -23,25 +23,23 @@ class AwhpProps(enum.Enum):
     HP_HEATER_2_STATUS = "ElcHe2RunSta"
     AUTOMATIC_FROST_PROTECTION = "AnFrzzRunSta"
     # HOT_WATER_EXT = "WatBoxExt"
-    # TEMP_UNIT = "TemUn"
-    # ALL_ERR = "AllErr"
-
+    
     POWER = "Pow" # 1
     MODE = "Mod"  # 4
     COOL_TEMP_SET = "CoWatOutTemSet" # 18
     HEAT_TEMP_SET = "HeWatOutTemSet" # 33
     HOT_WATER_TEMP_SET = "WatBoxTemSet" # 55
-    TEMP_UNIT = "TemUn" # 0
-    TEMP_REC = "TemRec" # 0
-    ALL_ERR = "AllErr" # 0
+    #TEMP_UNIT = "TemUn" # 0
+    #TEMP_REC = "TemRec" # 0
+    #ALL_ERR = "AllErr" # 0
 
     COOL_AND_HOT_WATER = "ColHtWter" # 1
     HEAT_AND_HOT_WATER = "HetHtWter" # 1
-    TEMP_REC_B = "TemRecB" # 0
+    #TEMP_REC_B = "TemRecB" # 0
     COOL_HOME_TEMP_SET = "CoHomTemSet" # 24
     HEAT_HOME_TEMP_SET = "HeHomTemSet" # 25
     
-    FAST_HEAT_WATER = "FastHtWter" # 0
+    #FAST_HEAT_WATER = "FastHtWter" # 0
     QUIET = "Quiet" # 0
     LEFT_HOME = "LefHom" # 0
     DISINFECT = "SwDisFct" # Maybe Disinfect?
@@ -261,57 +259,57 @@ class AwhpDevice(BaseDevice):
 #    def emegcy(self, value: bool):
 #        self.set_property(AWHPProps.EMEGCY, int(value))
 
-    @property
-    def hand_fro_swh(self) -> bool:
-        return bool(self.get_property(AwhpProps.HAND_FRO_SWH))
+    # @property
+    # def hand_fro_swh(self) -> bool:
+    #     return bool(self.get_property(AwhpProps.HAND_FRO_SWH))
     
 #    @hand_fro_swh.setter
 #    def hand_fro_swh(self, value: bool):
 #        self.set_property(AWHPProps.HAND_FRO_SWH, int(value))
 
-    @property
-    def water_sys_exh_swh(self) -> bool:
-        return bool(self.get_property(AwhpProps.WATER_SYS_EXH_SWH))
+    # @property
+    # def water_sys_exh_swh(self) -> bool:
+    #     return bool(self.get_property(AwhpProps.WATER_SYS_EXH_SWH))
     
 #    @water_sys_exh_swh.setter
 #    def water_sys_exh_swh(self, value: bool):
 #        self.set_property(AWHPProps.WATER_SYS_EXH_SWH, int(value))
 
-    @property
-    def bord_test(self) -> bool:
-        return bool(self.get_property(AwhpProps.BORD_TEST))
+    # @property
+    # def bord_test(self) -> bool:
+    #     return bool(self.get_property(AwhpProps.BORD_TEST))
     
 #    @bord_test.setter
 #    def bord_test(self, value: bool):
 #        self.set_property(AWHPProps.BORD_TEST, int(value))
 
-    @property
-    def col_colet_swh(self) -> bool:
-        return bool(self.get_property(AwhpProps.COL_COLET_SWH))
+    # @property
+    # def col_colet_swh(self) -> bool:
+    #     return bool(self.get_property(AwhpProps.COL_COLET_SWH))
     
 #    @col_colet_swh.setter
 #    def col_colet_swh(self, value: bool):
 #        self.set_property(AWHPProps.COL_COLET_SWH, int(value))
 
-    @property
-    def end_temp_cot_swh(self) -> bool:
-        return bool(self.get_property(AwhpProps.END_TEMP_COT_SWH))
+    # @property
+    # def end_temp_cot_swh(self) -> bool:
+    #     return bool(self.get_property(AwhpProps.END_TEMP_COT_SWH))
     
 #    @end_temp_cot_swh.setter
 #    def end_temp_cot_swh(self, value: bool):
 #        self.set_property(AWHPProps.END_TEMP_COT_SWH, int(value))
 
-    @property
-    def model_type(self) -> bool:
-        return bool(self.get_property(AwhpProps.MODEL_TYPE))
+    # @property
+    # def model_type(self) -> bool:
+    #     return bool(self.get_property(AwhpProps.MODEL_TYPE))
     
 #    @model_type.setter
 #    def model_type(self, value: bool):
 #        self.set_property(AWHPProps.MODEL_TYPE, int(value))
 
-    @property
-    def evu(self) -> bool:
-        return bool(self.get_property(AwhpProps.EVU))
+    # @property
+    # def evu(self) -> bool:
+    #     return bool(self.get_property(AwhpProps.EVU))
     
 #    @evu.setter
 #    def evu(self, value: bool):
@@ -333,25 +331,25 @@ class AwhpDevice(BaseDevice):
 #    def mode(self, value: int):
 #        self.set_property(AWHPProps.MODE, int(value))
 
-    @property
-    def temp_unit(self) -> int:
-        return self.get_property(AwhpProps.TEMP_UNIT)
+    # @property
+    # def temp_unit(self) -> int:
+    #     return self.get_property(AwhpProps.TEMP_UNIT)
     
 #    @temp_unit.setter
 #    def temp_unit(self, value: int):
 #        self.set_property(AWHPProps.TEMP_UNIT, int(value))
 
-    @property
-    def temp_rec(self) -> int:
-        return self.get_property(AwhpProps.TEMP_REC)
+    # @property
+    # def temp_rec(self) -> int:
+    #     return self.get_property(AwhpProps.TEMP_REC)
     
 #    @temp_rec.setter
 #    def temp_rec(self, value: int):
 #        self.set_property(AWHPProps.TEMP_REC, int(value))
 
-    @property
-    def all_err(self) -> int:
-        return self.get_property(AwhpProps.ALL_ERR)
+    # @property
+    # def all_err(self) -> int:
+    #     return self.get_property(AwhpProps.ALL_ERR)
     
 #    @all_err.setter
 #    def all_err(self, value: int):
@@ -365,43 +363,11 @@ class AwhpDevice(BaseDevice):
     async def get_all_properties(self) -> dict:
         """Get all properties in a single request and return them."""
         await self.update_all_properties()
+        
+        # Create a dictionary of all defined properties
         return {
-            # Current temperatures (whole numbers)
-            AwhpProps.T_WATER_IN_PE_W.value: self.get_property(AwhpProps.T_WATER_IN_PE_W),
-            AwhpProps.T_WATER_IN_PE_D.value: self.get_property(AwhpProps.T_WATER_IN_PE_D),
-            AwhpProps.T_WATER_OUT_PE_W.value: self.get_property(AwhpProps.T_WATER_OUT_PE_W),
-            AwhpProps.T_WATER_OUT_PE_D.value: self.get_property(AwhpProps.T_WATER_OUT_PE_D),
-            AwhpProps.T_OPT_WATER_W.value: self.get_property(AwhpProps.T_OPT_WATER_W),
-            AwhpProps.T_OPT_WATER_D.value: self.get_property(AwhpProps.T_OPT_WATER_D),
-            AwhpProps.HOT_WATER_TEMP_W.value: self.get_property(AwhpProps.HOT_WATER_TEMP_W),
-            AwhpProps.HOT_WATER_TEMP_D.value: self.get_property(AwhpProps.HOT_WATER_TEMP_D),
-            AwhpProps.REMOTE_HOME_TEMP_W.value: self.get_property(AwhpProps.REMOTE_HOME_TEMP_W),
-            AwhpProps.REMOTE_HOME_TEMP_D.value: self.get_property(AwhpProps.REMOTE_HOME_TEMP_D),
-            
-            # Status indicators
-            AwhpProps.TANK_HEATER_STATUS.value: self.get_property(AwhpProps.TANK_HEATER_STATUS),
-            AwhpProps.SYSTEM_DEFROSTING_STATUS.value: self.get_property(AwhpProps.SYSTEM_DEFROSTING_STATUS),
-            AwhpProps.HP_HEATER_1_STATUS.value: self.get_property(AwhpProps.HP_HEATER_1_STATUS),
-            AwhpProps.HP_HEATER_2_STATUS.value: self.get_property(AwhpProps.HP_HEATER_2_STATUS),
-            AwhpProps.AUTOMATIC_FROST_PROTECTION.value: self.get_property(AwhpProps.AUTOMATIC_FROST_PROTECTION),
-            
-            # Operation settings
-            AwhpProps.POWER.value: self.get_property(AwhpProps.POWER),
-            AwhpProps.MODE.value: self.get_property(AwhpProps.MODE),
-            AwhpProps.COOL_TEMP_SET.value: self.get_property(AwhpProps.COOL_TEMP_SET),
-            AwhpProps.HEAT_TEMP_SET.value: self.get_property(AwhpProps.HEAT_TEMP_SET),
-            AwhpProps.HOT_WATER_TEMP_SET.value: self.get_property(AwhpProps.HOT_WATER_TEMP_SET),
-            
-            # Other settings
-            AwhpProps.FAST_HEAT_WATER.value: self.get_property(AwhpProps.FAST_HEAT_WATER),
-            AwhpProps.QUIET.value: self.get_property(AwhpProps.QUIET),
-            AwhpProps.LEFT_HOME.value: self.get_property(AwhpProps.LEFT_HOME),
-            AwhpProps.DISINFECT.value: self.get_property(AwhpProps.DISINFECT),
-            AwhpProps.POWER_SAVE.value: self.get_property(AwhpProps.POWER_SAVE),
-
-            # Comment out untested properties
-            # AwhpProps.VERSATI_SERIES.value: self.get_property(AwhpProps.VERSATI_SERIES),
-
+            prop.value: self.get_property(prop)
+            for prop in AwhpProps
         }
 
     async def update_state(self, wait_for: float = 30):
