@@ -4,7 +4,8 @@ import enum
 import pytest
 
 from gree_versati.cipher import CipherV1
-from gree_versati.device import Device, DeviceInfo, Props, TemperatureUnits
+from gree_versati.device import Device, Props, TemperatureUnits
+from gree_versati.deviceinfo import DeviceInfo
 from gree_versati.exceptions import DeviceNotBoundError, DeviceTimeoutError
 
 
@@ -214,6 +215,7 @@ async def test_device_bind(cipher, send):
         device.device_cipher = CipherV1(fake_key.encode())
         device.ready.set()
         device.handle_device_bound(fake_key)
+
     send.side_effect = fake_send
 
     assert device.device_info == info
@@ -249,6 +251,7 @@ async def test_device_bind_none(cipher, send):
 
     def fake_send(*args, **kwargs):
         device.ready.set()
+
     send.side_effect = fake_send
 
     with pytest.raises(DeviceNotBoundError):
@@ -269,10 +272,12 @@ async def test_device_late_bind_from_update(cipher, send):
         device.device_cipher = CipherV1(fake_key.encode())
         device.handle_device_bound(fake_key)
         device.ready.set()
+
     send.side_effect = fake_send
 
     await device.update_state()
     assert send.call_count == 2
+    assert device.device_cipher is not None
     assert device.device_cipher.key == fake_key
 
     device.power = True
@@ -295,10 +300,12 @@ async def test_device_late_bind_from_request_version(cipher, send):
         device.device_cipher = CipherV1(fake_key.encode())
         device.handle_device_bound(fake_key)
         device.ready.set()
+
     send.side_effect = fake_send
 
     await device.request_version()
     assert send.call_count == 2
+    assert device.device_cipher is not None
     assert device.device_cipher.key == fake_key
 
 
@@ -333,6 +340,7 @@ async def test_update_properties(cipher, send):
     def fake_send(*args, **kwargs):
         state = get_mock_state()
         device.handle_state_update(**state)
+
     send.side_effect = fake_send
 
     await device.update_state()
@@ -425,8 +433,11 @@ async def test_set_properties_timeout(cipher, send):
     assert len(device._dirty)
 
     send.reset_mock()
-    send.side_effect = [asyncio.TimeoutError,
-                        asyncio.TimeoutError, asyncio.TimeoutError]
+    send.side_effect = [
+        asyncio.TimeoutError,
+        asyncio.TimeoutError,
+        asyncio.TimeoutError,
+    ]
     with pytest.raises(DeviceTimeoutError):
         await device.push_state_update()
 
@@ -463,6 +474,7 @@ async def test_update_current_temp_unsupported(cipher, send):
     def fake_send(*args, **kwargs):
         state = get_mock_state_no_temperature()
         device.handle_state_update(**state)
+
     send.side_effect = fake_send
 
     await device.update_state()
@@ -486,6 +498,7 @@ async def test_update_current_temp_v3(temsen, hid, cipher, send):
 
     def fake_send(*args, **kwargs):
         device.handle_state_update(TemSen=temsen, hid=hid)
+
     send.side_effect = fake_send
 
     await device.update_state()
@@ -510,6 +523,7 @@ async def test_update_current_temp_v4(temsen, hid, cipher, send):
 
     def fake_send(*args, **kwargs):
         device.handle_state_update(TemSen=temsen, hid=hid)
+
     send.side_effect = fake_send
 
     await device.update_state()
@@ -525,12 +539,12 @@ async def test_update_current_temp_bad(cipher, send):
 
     def fake_send(*args, **kwargs):
         device.handle_state_update(**get_mock_state_bad_temp())
+
     send.side_effect = fake_send
 
     await device.update_state()
 
-    assert device.current_temperature == get_mock_state_bad_temp()[
-        "TemSen"] - 40
+    assert device.current_temperature == get_mock_state_bad_temp()["TemSen"] - 40
 
 
 @pytest.mark.asyncio
@@ -540,6 +554,7 @@ async def test_update_current_temp_0C_v4(cipher, send):
 
     def fake_send(*args, **kwargs):
         device.handle_state_update(**get_mock_state_0c_v4_temp())
+
     send.side_effect = fake_send
 
     await device.update_state()
@@ -554,6 +569,7 @@ async def test_update_current_temp_0C_v3(cipher, send):
 
     def fake_send(*args, **kwargs):
         device.handle_state_update(**get_mock_state_0c_v3_temp())
+
     send.side_effect = fake_send
 
     await device.update_state()
@@ -576,6 +592,7 @@ async def test_send_temperature_celsius(temperature, cipher, send):
 
     def fake_send(*args, **kwargs):
         device.handle_state_update(**state)
+
     send.side_effect = fake_send
 
     await device.update_state()
@@ -606,6 +623,7 @@ async def test_send_temperature_farenheit(temperature, cipher, send):
 
     def fake_send(*args, **kwargs):
         device.handle_state_update(**state)
+
     send.side_effect = fake_send
 
     await device.update_state()
@@ -674,9 +692,7 @@ async def test_enable_disable_sleep_mode(cipher, send):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "temperature", [59, 77, 86]
-)
+@pytest.mark.parametrize("temperature", [59, 77, 86])
 async def test_mismatch_temrec_farenheit(temperature, cipher, send):
     """Check that temperature is set and read properly in F."""
     temSet = round((temperature - 32.0) * 5.0 / 9.0)
@@ -696,6 +712,7 @@ async def test_mismatch_temrec_farenheit(temperature, cipher, send):
 
     def fake_send(*args, **kwargs):
         device.handle_state_update(**state)
+
     send.side_effect = None
 
     await device.update_state()

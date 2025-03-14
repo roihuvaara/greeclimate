@@ -7,7 +7,7 @@ from gree_versati.cipher import CipherBase, CipherV1, CipherV2
 
 @pytest.fixture
 def cipher_v1_key():
-    return b'ThisIsASecretKey'
+    return b"ThisIsASecretKey"
 
 
 @pytest.fixture
@@ -17,7 +17,7 @@ def cipher_v1(cipher_v1_key):
 
 @pytest.fixture
 def cipher_v2_key():
-    return b'ThisIsASecretKey'
+    return b"ThisIsASecretKey"
 
 
 @pytest.fixture
@@ -50,7 +50,7 @@ def test_encryption_then_decryption_yields_original_with_tag(cipher_v2, plain_te
 
 
 def test_cipher_base_not_implemented():
-    fake_key = b'fake'
+    fake_key = b"fake"
 
     with pytest.raises(NotImplementedError):
         CipherBase(fake_key).encrypt(None)

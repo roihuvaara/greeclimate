@@ -57,9 +57,7 @@ DEFAULT_REQUEST = {
     "uid": 0,
     "cid": "aabbcc112233",
     "tcid": "",
-    "pack": {
-        "t": "test"
-    }
+    "pack": {"t": "test"},
 }
 DEFAULT_RESPONSE = {
     "t": "pack",
@@ -67,9 +65,7 @@ DEFAULT_RESPONSE = {
     "uid": 0,
     "cid": "aabbcc112233",
     "tcid": "",
-    "pack": {
-        "t": "testresponse"
-    }
+    "pack": {"t": "testresponse"},
 }
 
 
@@ -127,12 +123,12 @@ class Responder:
         """Enter the context manager."""
         self.sock = socket.socket(self.family, SOCK_DGRAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.sock.setsockopt(
-            socket.SOL_SOCKET, socket.SO_BROADCAST, self.bcast)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, self.bcast)
         self.sock.settimeout(DEFAULT_TIMEOUT)
         self.sock.bind(("", self.addr))
         return self.sock
 
     def __exit__(self, *args):
         """Exit the context manager."""
-        self.sock.close()
+        if self.sock:
+            self.sock.close()

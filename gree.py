@@ -5,7 +5,8 @@ import logging
 
 from aioconsole import ainput
 
-from gree_versati.device import Device, DeviceInfo
+from gree_versati.device import Device
+from gree_versati.deviceinfo import DeviceInfo
 from gree_versati.discovery import Discovery, Listener
 
 logging.basicConfig(
@@ -59,15 +60,15 @@ async def wait_for_input():
     device = listener.get_device()
 
     while True:
-        """
-            Get text input from the command line and pass it to device's decrypt method.
-            Attempt to naively clean up the extras from wireshark's copy paste but not much
-            effort was put into this. This is enough to capture the pack and decrypt it to
-            find correct property names and values.
+        """Get text input from the command line and pass it to device's decrypt method.
+
+        Attempt to naively clean up the extras from wireshark's copy paste but
+        not much effort was put into this. This is enough to capture the pack
+        and decrypt it to find correct property names and values.
         """
         try:
             text = await ainput("Enter text to decrypt: ")
-            clean_text = text[text.find("{"):] if "{" in text else ""
+            clean_text = text[text.find("{") :] if "{" in text else ""
             obj = json.loads(clean_text)
 
             if obj.get("pack"):
@@ -77,6 +78,7 @@ async def wait_for_input():
             print(f"Invalid JSON input after cleaning: {e}")
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Gree command line utility.")

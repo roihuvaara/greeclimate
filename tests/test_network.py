@@ -2,6 +2,7 @@ import asyncio
 import json
 import socket
 from threading import Thread
+from typing import cast
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -33,8 +34,8 @@ class FakeDiscoveryProtocol(BroadcastListenerProtocol):
     """Fake discovery class."""
 
     def __init__(self):
-        super().__init__(timeout=1, drained=None)
-        self.packets = asyncio.Queue()
+        super().__init__(timeout=1, drained=asyncio.Event())
+        self.packets: asyncio.Queue = asyncio.Queue()
 
     def packet_received(self, obj, addr: IPAddr) -> None:
         self.packets.put_nowait(obj)
@@ -43,9 +44,9 @@ class FakeDiscoveryProtocol(BroadcastListenerProtocol):
 class FakeDeviceProtocol(DeviceProtocol2):
     """Fake discovery class."""
 
-    def __init__(self, drained: asyncio.Event = None):
-        super().__init__(timeout=1, drained=drained)
-        self.packets = asyncio.Queue()
+    def __init__(self, drained: asyncio.Event | None = None):
+        super().__init__(timeout=1, drained=drained or asyncio.Event())
+        self.packets: asyncio.Queue = asyncio.Queue()
         self.device_cipher = FakeCipher(b"1234567890123456")
 
     def packet_received(self, obj, addr: IPAddr) -> None:
@@ -53,9 +54,7 @@ class FakeDeviceProtocol(DeviceProtocol2):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "addr,family", [(("127.0.0.1", 7000), socket.AF_INET)]
-)
+@pytest.mark.parametrize("addr,family", [(("127.0.0.1", 7000), socket.AF_INET)])
 async def test_close_connection(addr, family):
     """Test closing the connection."""
     # Run the listener portion now
@@ -94,7 +93,10 @@ async def test_set_get_key():
     key = "faketestkey"
     dp2 = DeviceProtocolBase2()
     dp2.device_cipher = FakeCipher(key.encode())
-    assert dp2.device_cipher.key == key
+    assert dp2.device_cipher is not None
+    # Use cast to tell pyright that device_cipher is not None here
+    cipher = cast(FakeCipher, dp2.device_cipher)
+    assert cipher.key == key
 
 
 @pytest.mark.asyncio
@@ -142,11 +144,12 @@ async def test_pause_resume(addr):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "addr,family", [(("127.0.0.1", 7000), socket.AF_INET)]
-)
+@pytest.mark.parametrize("addr,family", [(("127.0.0.1", 7000), socket.AF_INET)])
 async def test_broadcast_recv(addr, family):
-    """Create a socket broadcast responder, an async broadcast listener, test discovery responses."""
+    """Create a socket broadcast responder and an async broadcast listener.
+
+    Tests discovery responses from the network.
+    """
     with Responder(family, addr[1]) as sock:
 
         def responder(s):
@@ -245,7 +248,8 @@ async def test_datagram_connect(addr, family):
         )
 
         # Send the scan command
-        await protocol.send(DEFAULT_REQUEST, None, FakeCipher(b"1234567890123456"))
+        cipher = FakeCipher(b"1234567890123456")
+        await protocol.send(DEFAULT_REQUEST, remote_addr, cipher)
 
         # Wait on the scan response
         task = asyncio.create_task(protocol.packets.get())
@@ -265,8 +269,7 @@ def test_bindok_handling():
     protocol.device_cipher = FakeCipher(b"1234567890123456")
 
     with patch.object(DeviceProtocol2, "handle_device_bound") as mock:
-        protocol.datagram_received(json.dumps(
-            response).encode(), ("0.0.0.0", 0))
+        protocol.datagram_received(json.dumps(response).encode(), ("0.0.0.0", 0))
         assert mock.call_count == 1
         assert mock.call_args[0][0] == "fake-key"
 
@@ -282,16 +285,12 @@ def test_create_bind_message():
     # Assert
     assert isinstance(result, dict)
     assert result == {
-        'cid': 'app',
-        'i': 1,  # Default key encryption
-        't': 'pack',
-        'uid': 0,
-        'tcid': device_info.mac,
-        'pack': {
-            't': 'bind',
-            'mac': device_info.mac,
-            'uid': 0
-        }
+        "cid": "app",
+        "i": 1,  # Default key encryption
+        "t": "pack",
+        "uid": 0,
+        "tcid": device_info.mac,
+        "pack": {"t": "bind", "mac": device_info.mac, "uid": 0},
     }
 
 
@@ -301,21 +300,21 @@ def test_create_status_message():
     protocol = DeviceProtocol2()
 
     # Act
-    result = protocol.create_status_message(device_info, 'test')
+    result = protocol.create_status_message(device_info, "test")
 
     # Assert
     assert isinstance(result, dict)
     assert result == {
-        'cid': 'app',
-        'i': 0,  # Device key encryption
-        't': 'pack',
-        'uid': 0,
-        'tcid': device_info.mac,
-        'pack': {
-            't': 'status',
-            'mac': device_info.mac,
-            'cols': ['test'],
-        }
+        "cid": "app",
+        "i": 0,  # Device key encryption
+        "t": "pack",
+        "uid": 0,
+        "tcid": device_info.mac,
+        "pack": {
+            "t": "status",
+            "mac": device_info.mac,
+            "cols": ["test"],
+        },
     }
 
 
@@ -325,22 +324,22 @@ def test_create_command_message():
     protocol = DeviceProtocol2()
 
     # Act
-    result = protocol.create_command_message(device_info, **{'key': 'value'})
+    result = protocol.create_command_message(device_info, **{"key": "value"})
 
     # Assert
     assert isinstance(result, dict)
     assert result == {
-        'cid': 'app',
-        'i': 0,  # Device key encryption
-        't': 'pack',
-        'uid': 0,
-        'tcid': device_info.mac,
-        'pack': {
-            't': 'cmd',
-            'mac': device_info.mac,
-            'opt': ['key'],
-            'p': ['value'],
-        }
+        "cid": "app",
+        "i": 0,  # Device key encryption
+        "t": "pack",
+        "uid": 0,
+        "tcid": device_info.mac,
+        "pack": {
+            "t": "cmd",
+            "mac": device_info.mac,
+            "opt": ["key"],
+            "p": ["value"],
+        },
     }
 
 
@@ -363,43 +362,35 @@ class DeviceProtocol2Test(DeviceProtocol2):
 
 
 def test_handle_state_update():
-
     # Arrange
     protocol = DeviceProtocol2Test()
-    state = {'key': 'value'}
+    state = {"key": "value"}
 
     # Act
-    protocol.packet_received({
-        'pack': {
-            't': 'dat',
-            'cols': list(state.keys()),
-            'dat': list(state.values())
-        }
-    }, ("0.0.0.0", 0))
+    protocol.packet_received(
+        {"pack": {"t": "dat", "cols": list(state.keys()), "dat": list(state.values())}},
+        ("0.0.0.0", 0),
+    )
 
     # Assert
     assert protocol.state == state
-    assert protocol.state == {'key': 'value'}
+    assert protocol.state == {"key": "value"}
 
 
 def test_handle_result_update():
-
     # Arrange
     protocol = DeviceProtocol2Test()
-    state = {'key': 'value'}
+    state = {"key": "value"}
 
     # Act
-    protocol.packet_received({
-        'pack': {
-            't': 'res',
-            'opt': list(state.keys()),
-            'val': list(state.values())
-        }
-    }, ("0.0.0.0", 0))
+    protocol.packet_received(
+        {"pack": {"t": "res", "opt": list(state.keys()), "val": list(state.values())}},
+        ("0.0.0.0", 0),
+    )
 
     # Assert
     assert protocol.state == state
-    assert protocol.state == {'key': 'value'}
+    assert protocol.state == {"key": "value"}
 
 
 def test_handle_device_bound():
@@ -407,12 +398,9 @@ def test_handle_device_bound():
     protocol = DeviceProtocol2Test()
 
     # Act
-    protocol.packet_received({
-        'pack': {
-            't': 'bindok',
-            'key': 'fake-key'
-        }
-    }, ("0.0.0.0", 0))
+    protocol.packet_received(
+        {"pack": {"t": "bindok", "key": "fake-key"}}, ("0.0.0.0", 0)
+    )
 
     # Assert
     assert protocol._ready.is_set()
@@ -424,21 +412,21 @@ def test_handle_unknown_packet():
     protocol = DeviceProtocol2Test()
 
     # Act
-    protocol.packet_received({
-        'pack': {
-            't': 'unknown'
-        }
-    }, ("0.0.0.0", 0))
+    protocol.packet_received({"pack": {"t": "unknown"}}, ("0.0.0.0", 0))
 
     # Assert
     assert protocol.unknown is True
 
 
-@pytest.mark.parametrize("use_default_key,command,data",
-                         [(1, Commands.BIND, {"uid": 0}),
-                          (1, Commands.SCAN, None),
-                          (0, Commands.STATUS, {'cols': ['test']}),
-                          (0, Commands.CMD, {'opt': ['key'], 'p': ['value']})])
+@pytest.mark.parametrize(
+    "use_default_key,command,data",
+    [
+        (1, Commands.BIND, {"uid": 0}),
+        (1, Commands.SCAN, None),
+        (0, Commands.STATUS, {"cols": ["test"]}),
+        (0, Commands.CMD, {"opt": ["key"], "p": ["value"]}),
+    ],
+)
 def test_generate_payload(use_default_key, command, data):
     # Arrange
     device_info = DeviceInfo(*get_mock_info())
@@ -449,32 +437,35 @@ def test_generate_payload(use_default_key, command, data):
 
     # Assert
     expected = {
-        'cid': 'app',
-        'i': use_default_key,  # Device key encryption
-        't': Commands.PACK.value if data is not None else command.value,
-        'uid': 0,
-        'tcid': device_info.mac,
+        "cid": "app",
+        "i": use_default_key,  # Device key encryption
+        "t": Commands.PACK.value if data is not None else command.value,
+        "uid": 0,
+        "tcid": device_info.mac,
     }
     if data:
-        expected['pack'] = {'t': command.value, 'mac': device_info.mac}
-        expected['pack'].update(data)
+        expected["pack"] = {"t": command.value, "mac": device_info.mac}
+        expected["pack"].update(data)
 
     assert isinstance(result, dict)
     assert result == expected
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("event_name, data", [
-    (Response.BIND_OK, {'key': 'fake-key'}),
-    (Response.DATA, {'cols': ['test'], 'dat': ['value']}),
-    (Response.RESULT, {'opt': ['key'], 'val': ['value']})
-])
+@pytest.mark.parametrize(
+    "event_name, data",
+    [
+        (Response.BIND_OK, {"key": "fake-key"}),
+        (Response.DATA, {"cols": ["test"], "dat": ["value"]}),
+        (Response.RESULT, {"opt": ["key"], "val": ["value"]}),
+    ],
+)
 async def test_add_and_remove_handler(event_name, data):
     # Arrange
     protocol = DeviceProtocol2()
     callback = MagicMock()
-    event_data = {'pack': {'t': event_name.value}}
-    event_data['pack'].update(data)
+    event_data = {"pack": {"t": event_name.value}}
+    event_data["pack"].update(data)
 
     # Act
     protocol.add_handler(event_name, callback)

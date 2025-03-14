@@ -1,9 +1,10 @@
 import asyncio
 import enum
 import re
+from typing import Any, Dict, Optional
 
 from gree_versati.base_device import BaseDevice
-from gree_versati.exceptions import DeviceTimeoutError
+from gree_versati.exceptions import DeviceNotBoundError, DeviceTimeoutError
 
 
 class AwhpProps(enum.Enum):
@@ -61,74 +62,82 @@ class AwhpProps(enum.Enum):
 class AwhpDevice(BaseDevice):
     """Device class for Air-Water Heat Pump."""
 
-    def _get_celsius(self, whole, decimal) -> float:
+    def _get_celsius(self, whole, decimal) -> Optional[float]:
         """Helper to combine temperature values into celsius."""
         if whole is None or decimal is None:
             return None
         return whole - 100 + (decimal / 10)
 
-    def t_water_in_pe(self, raw_data: dict = None) -> float:
+    def t_water_in_pe(
+        self, raw_data: Optional[Dict[str, Any]] = None
+    ) -> Optional[float]:
         """Get water input temperature."""
         if raw_data:
             return self._get_celsius(
                 raw_data.get(AwhpProps.T_WATER_IN_PE_W.value),
-                raw_data.get(AwhpProps.T_WATER_IN_PE_D.value)
+                raw_data.get(AwhpProps.T_WATER_IN_PE_D.value),
             )
         return self._get_celsius(
             self.get_property(AwhpProps.T_WATER_IN_PE_W),
-            self.get_property(AwhpProps.T_WATER_IN_PE_D)
+            self.get_property(AwhpProps.T_WATER_IN_PE_D),
         )
 
-    def t_water_out_pe(self, raw_data: dict = None) -> float:
+    def t_water_out_pe(
+        self, raw_data: Optional[Dict[str, Any]] = None
+    ) -> Optional[float]:
         """Get water output temperature."""
         if raw_data:
             return self._get_celsius(
                 raw_data.get(AwhpProps.T_WATER_OUT_PE_W.value),
-                raw_data.get(AwhpProps.T_WATER_OUT_PE_D.value)
+                raw_data.get(AwhpProps.T_WATER_OUT_PE_D.value),
             )
         return self._get_celsius(
             self.get_property(AwhpProps.T_WATER_OUT_PE_W),
-            self.get_property(AwhpProps.T_WATER_OUT_PE_D)
+            self.get_property(AwhpProps.T_WATER_OUT_PE_D),
         )
 
-    def t_opt_water(self, raw_data: dict = None) -> float:
+    def t_opt_water(self, raw_data: Optional[Dict[str, Any]] = None) -> Optional[float]:
         """Get optimal water temperature."""
         if raw_data:
             return self._get_celsius(
-                raw_data.get("HepOutWatTemHi"),
-                raw_data.get("HepOutWatTemLo")
+                raw_data.get(AwhpProps.T_OPT_WATER_W.value),
+                raw_data.get(AwhpProps.T_OPT_WATER_D.value),
             )
         return self._get_celsius(
             self.get_property(AwhpProps.T_OPT_WATER_W),
-            self.get_property(AwhpProps.T_OPT_WATER_D)
+            self.get_property(AwhpProps.T_OPT_WATER_D),
         )
 
-    def hot_water_temp(self, raw_data: dict = None) -> float:
+    def hot_water_temp(
+        self, raw_data: Optional[Dict[str, Any]] = None
+    ) -> Optional[float]:
         """Get hot water temperature."""
         if raw_data:
             return self._get_celsius(
-                raw_data.get("WatBoxTemHi"),
-                raw_data.get("WatBoxTemLo")
+                raw_data.get(AwhpProps.HOT_WATER_TEMP_W.value),
+                raw_data.get(AwhpProps.HOT_WATER_TEMP_D.value),
             )
         return self._get_celsius(
             self.get_property(AwhpProps.HOT_WATER_TEMP_W),
-            self.get_property(AwhpProps.HOT_WATER_TEMP_D)
+            self.get_property(AwhpProps.HOT_WATER_TEMP_D),
         )
 
-    def remote_home_temp(self, raw_data: dict = None) -> float:
+    def remote_home_temp(
+        self, raw_data: Optional[Dict[str, Any]] = None
+    ) -> Optional[float]:
         """Get remote home temperature."""
         if raw_data:
             return self._get_celsius(
-                raw_data.get("RmoHomTemHi"),
-                raw_data.get("RmoHomTemLo")
+                raw_data.get(AwhpProps.REMOTE_HOME_TEMP_W.value),
+                raw_data.get(AwhpProps.REMOTE_HOME_TEMP_D.value),
             )
         return self._get_celsius(
             self.get_property(AwhpProps.REMOTE_HOME_TEMP_W),
-            self.get_property(AwhpProps.REMOTE_HOME_TEMP_D)
+            self.get_property(AwhpProps.REMOTE_HOME_TEMP_D),
         )
 
     @property
-    def cool_temp_set(self) -> int:
+    def cool_temp_set(self) -> Optional[int]:
         return self.get_property(AwhpProps.COOL_TEMP_SET)
 
     @cool_temp_set.setter
@@ -136,7 +145,7 @@ class AwhpDevice(BaseDevice):
         self.set_property(AwhpProps.COOL_TEMP_SET, value)
 
     @property
-    def heat_temp_set(self) -> int:
+    def heat_temp_set(self) -> Optional[int]:
         return self.get_property(AwhpProps.HEAT_TEMP_SET)
 
     @heat_temp_set.setter
@@ -144,231 +153,161 @@ class AwhpDevice(BaseDevice):
         self.set_property(AwhpProps.HEAT_TEMP_SET, value)
 
     @property
-    def hot_water_temp_set(self) -> int:
+    def hot_water_temp_set(self) -> Optional[int]:
         return self.get_property(AwhpProps.HOT_WATER_TEMP_SET)
 
     @hot_water_temp_set.setter
     def hot_water_temp_set(self, value: int):
         self.set_property(AwhpProps.HOT_WATER_TEMP_SET, value)
 
-###
-# The following setters are not yet implemented
-# Need to figure out what they do exactly
-###
     @property
     def cool_and_hot_water(self) -> bool:
         return bool(self.get_property(AwhpProps.COOL_AND_HOT_WATER))
 
-#    @cool_and_hot_water.setter
-#    def cool_and_hot_water(self, value: bool):
-#        self.set_property(AWHPProps.COOL_AND_HOT_WATER, int(value))
+    @cool_and_hot_water.setter
+    def cool_and_hot_water(self, value: bool):
+        self.set_property(AwhpProps.COOL_AND_HOT_WATER, int(value))
 
     @property
     def heat_and_hot_water(self) -> bool:
         return bool(self.get_property(AwhpProps.HEAT_AND_HOT_WATER))
 
-#    @heat_and_hot_water.setter
-#    def heat_and_hot_water(self, value: bool):
-#        self.set_property(AWHPProps.HEAT_AND_HOT_WATER, int(value))
+    @heat_and_hot_water.setter
+    def heat_and_hot_water(self, value: bool):
+        self.set_property(AwhpProps.HEAT_AND_HOT_WATER, int(value))
 
     @property
-    def cool_home_temp_set(self) -> int:
+    def cool_home_temp_set(self) -> Optional[int]:
         return self.get_property(AwhpProps.COOL_HOME_TEMP_SET)
 
-#    @cool_home_temp_set.setter
-#    def cool_home_temp_set(self, value: int):
-#        self.set_property(AWHPProps.COOL_HOME_TEMP_SET, value)
+    @cool_home_temp_set.setter
+    def cool_home_temp_set(self, value: int):
+        self.set_property(AwhpProps.COOL_HOME_TEMP_SET, value)
 
     @property
-    def heat_home_temp_set(self) -> int:
+    def heat_home_temp_set(self) -> Optional[int]:
         return self.get_property(AwhpProps.HEAT_HOME_TEMP_SET)
 
-#    @heat_home_temp_set.setter
-#    def heat_home_temp_set(self, value: int):
-#        self.set_property(AWHPProps.HEAT_HOME_TEMP_SET, value)
+    @heat_home_temp_set.setter
+    def heat_home_temp_set(self, value: int):
+        self.set_property(AwhpProps.HEAT_HOME_TEMP_SET, value)
 
     @property
     def fast_heat_water(self) -> bool:
         return bool(self.get_property(AwhpProps.FAST_HEAT_WATER))
 
-#    @fast_heat_water.setter
-#    def fast_heat_water_set(self, value: bool):
-#        self.set_property(AWHPProps.FAST_HEAT_WATER, int(value))
+    @fast_heat_water.setter
+    def fast_heat_water(self, value: bool):
+        self.set_property(AwhpProps.FAST_HEAT_WATER, int(value))
 
     @property
     def left_home(self) -> bool:
         return bool(self.get_property(AwhpProps.LEFT_HOME))
 
-#    @left_home.setter
-#    def left_home(self, value: bool):
-#        self.set_property(AWHPProps.LEFT_HOME, int(value))
+    @left_home.setter
+    def left_home(self, value: bool):
+        self.set_property(AwhpProps.LEFT_HOME, int(value))
 
     @property
     def disinfect(self) -> bool:
         return bool(self.get_property(AwhpProps.DISINFECT))
 
-#    @disinfect.setter
-#    def disinfect(self, value: bool):
-#        self.set_property(AWHPProps.DISINFECT, int(value))
+    @disinfect.setter
+    def disinfect(self, value: bool):
+        self.set_property(AwhpProps.DISINFECT, int(value))
 
     @property
     def power_save(self) -> bool:
         return bool(self.get_property(AwhpProps.POWER_SAVE))
 
-#    @power_save.setter
-#    def power_save(self, value: bool):
-#        self.set_property(AWHPProps.POWER_SAVE, int(value))
+    @power_save.setter
+    def power_save(self, value: bool):
+        self.set_property(AwhpProps.POWER_SAVE, int(value))
 
     @property
     def versati_series(self) -> bool:
         return bool(self.get_property(AwhpProps.VERSATI_SERIES))
 
-#    @versati_series.setter
-#    def versati_series(self, value: bool):
-#        self.set_property(AWHPProps.VERSATI_SERIES, int(value))
+    @versati_series.setter
+    def versati_series(self, value: bool):
+        self.set_property(AwhpProps.VERSATI_SERIES, int(value))
 
     @property
     def room_home_temp_ext(self) -> bool:
         return bool(self.get_property(AwhpProps.ROOM_HOME_TEMP_EXT))
 
-#    @room_home_temp_ext.setter
-#    def room_home_temp_ext(self, value: bool):
-#        self.set_property(AWHPProps.ROOM_HOME_TEMP_EXT, int(value))
+    @room_home_temp_ext.setter
+    def room_home_temp_ext(self, value: bool):
+        self.set_property(AwhpProps.ROOM_HOME_TEMP_EXT, int(value))
 
     @property
     def hot_water_ext(self) -> bool:
         return bool(self.get_property(AwhpProps.HOT_WATER_EXT))
 
-#    @hot_water_ext.setter
-#    def hot_water_ext(self, value: bool):
-#        self.set_property(AWHPProps.HOT_WATER_EXT, int(value))
+    @hot_water_ext.setter
+    def hot_water_ext(self, value: bool):
+        self.set_property(AwhpProps.HOT_WATER_EXT, int(value))
 
     @property
     def foc_mod_swh(self) -> bool:
         return bool(self.get_property(AwhpProps.FOC_MOD_SWH))
 
-#    @foc_mod_swh.setter
-#    def foc_mod_swh(self, value: bool):
-#        self.set_property(AWHPProps.FOC_MOD_SWH, int(value))
+    @foc_mod_swh.setter
+    def foc_mod_swh(self, value: bool):
+        self.set_property(AwhpProps.FOC_MOD_SWH, int(value))
 
     @property
     def emegcy(self) -> bool:
         return bool(self.get_property(AwhpProps.EMEGCY))
 
-#    @emegcy.setter
-#    def emegcy(self, value: bool):
-#        self.set_property(AWHPProps.EMEGCY, int(value))
+    @emegcy.setter
+    def emegcy(self, value: bool):
+        self.set_property(AwhpProps.EMEGCY, int(value))
 
     @property
     def hand_fro_swh(self) -> bool:
         return bool(self.get_property(AwhpProps.HAND_FRO_SWH))
 
-#    @hand_fro_swh.setter
-#    def hand_fro_swh(self, value: bool):
-#        self.set_property(AWHPProps.HAND_FRO_SWH, int(value))
+    @hand_fro_swh.setter
+    def hand_fro_swh(self, value: bool):
+        self.set_property(AwhpProps.HAND_FRO_SWH, int(value))
 
     @property
     def water_sys_exh_swh(self) -> bool:
         return bool(self.get_property(AwhpProps.WATER_SYS_EXH_SWH))
 
-#    @water_sys_exh_swh.setter
-#    def water_sys_exh_swh(self, value: bool):
-#        self.set_property(AWHPProps.WATER_SYS_EXH_SWH, int(value))
-
-    # @property
-    # def bord_test(self) -> bool:
-    #     return bool(self.get_property(AwhpProps.BORD_TEST))
-
-#    @bord_test.setter
-#    def bord_test(self, value: bool):
-#        self.set_property(AWHPProps.BORD_TEST, int(value))
-
-    # @property
-    # def col_colet_swh(self) -> bool:
-    #     return bool(self.get_property(AwhpProps.COL_COLET_SWH))
-
-#    @col_colet_swh.setter
-#    def col_colet_swh(self, value: bool):
-#        self.set_property(AWHPProps.COL_COLET_SWH, int(value))
-
-    # @property
-    # def end_temp_cot_swh(self) -> bool:
-    #     return bool(self.get_property(AwhpProps.END_TEMP_COT_SWH))
-
-#    @end_temp_cot_swh.setter
-#    def end_temp_cot_swh(self, value: bool):
-#        self.set_property(AWHPProps.END_TEMP_COT_SWH, int(value))
-
-    # @property
-    # def model_type(self) -> bool:
-    #     return bool(self.get_property(AwhpProps.MODEL_TYPE))
-
-#    @model_type.setter
-#    def model_type(self, value: bool):
-#        self.set_property(AWHPProps.MODEL_TYPE, int(value))
-
-    # @property
-    # def evu(self) -> bool:
-    #     return bool(self.get_property(AwhpProps.EVU))
-
-#    @evu.setter
-#    def evu(self, value: bool):
-#        self.set_property(AWHPProps.EVU, int(value))
+    @water_sys_exh_swh.setter
+    def water_sys_exh_swh(self, value: bool):
+        self.set_property(AwhpProps.WATER_SYS_EXH_SWH, int(value))
 
     @property
     def power(self) -> bool:
         return bool(self.get_property(AwhpProps.POWER))
 
-#    @power.setter
-#    def power(self, value: bool):
-#        self.set_property(AWHPProps.POWER, int(value))
+    @power.setter
+    def power(self, value: bool):
+        self.set_property(AwhpProps.POWER, int(value))
 
     @property
-    def mode(self) -> int:
+    def mode(self) -> Optional[int]:
         return self.get_property(AwhpProps.MODE)
 
-#    @mode.setter
-#    def mode(self, value: int):
-#        self.set_property(AWHPProps.MODE, int(value))
-
-    # @property
-    # def temp_unit(self) -> int:
-    #     return self.get_property(AwhpProps.TEMP_UNIT)
-
-#    @temp_unit.setter
-#    def temp_unit(self, value: int):
-#        self.set_property(AWHPProps.TEMP_UNIT, int(value))
-
-    # @property
-    # def temp_rec(self) -> int:
-    #     return self.get_property(AwhpProps.TEMP_REC)
-
-#    @temp_rec.setter
-#    def temp_rec(self, value: int):
-#        self.set_property(AWHPProps.TEMP_REC, int(value))
-
-    # @property
-    # def all_err(self) -> int:
-    #     return self.get_property(AwhpProps.ALL_ERR)
-
-#    @all_err.setter
-#    def all_err(self, value: int):
-#        self.set_property(AWHPProps.ALL_ERR, int(value))
+    @mode.setter
+    def mode(self, value: int):
+        self.set_property(AwhpProps.MODE, int(value))
 
     async def update_all_properties(self) -> None:
         """Update all device properties in a single request."""
         await self.update_state()
         # After update_state(), all properties are available in self._properties
+        return None
 
     async def get_all_properties(self) -> dict:
         """Get all properties in a single request and return them."""
         await self.update_all_properties()
 
         # Create a dictionary of all defined properties
-        return {
-            prop.value: self.get_property(prop)
-            for prop in AwhpProps
-        }
+        return {prop.value: self.get_property(prop) for prop in AwhpProps}
 
     async def update_state(self, wait_for: float = 30):
         """Update the internal state of the device."""
@@ -376,7 +315,8 @@ class AwhpDevice(BaseDevice):
             await self.bind()
 
         self._logger.debug(
-            "Updating AWHP device properties for (%s)", str(self.device_info))
+            "Updating AWHP device properties for (%s)", str(self.device_info)
+        )
 
         # Get all properties from the enum
         all_props = [prop.value for prop in AwhpProps]
@@ -385,25 +325,29 @@ class AwhpDevice(BaseDevice):
 
         # Split into batches of 23 properties to get all properties in 2 calls
         batch_size = 23
-        property_batches = [all_props[i:i + batch_size]
-                            for i in range(0, len(all_props), batch_size)]
+        property_batches = [
+            all_props[i : i + batch_size] for i in range(0, len(all_props), batch_size)
+        ]
 
-        self._logger.debug(
-            f"Split properties into {len(property_batches)} batches")
+        self._logger.debug(f"Split properties into {len(property_batches)} batches")
 
         try:
             for i, batch in enumerate(property_batches):
                 self._logger.debug(
-                    f"Requesting batch {i+1}/{len(property_batches)}: {batch}")
-                res = await self.send(self.create_status_message(self.device_info, *batch))
-                self._logger.debug(f"Received response: {res}")
+                    f"Requesting batch {i + 1}/{len(property_batches)}: {batch}"
+                )
+                # Type check to satisfy pyright
+                if self.device_info is None:
+                    raise DeviceNotBoundError("device_info is None")
+                await self.send(self.create_status_message(self.device_info, *batch))
+                self._logger.debug(f"Received batch {i + 1}")
 
             self._logger.debug(
-                f"All batches complete. Current device properties: {self._properties}")
+                f"All batches complete. Current device properties: {self._properties}"
+            )
 
-        except asyncio.TimeoutError:
-            self._logger.error("Timeout while requesting device state")
-            raise DeviceTimeoutError
+        except asyncio.TimeoutError as err:
+            raise DeviceTimeoutError from err
         except Exception as e:
             self._logger.error(f"Error updating state: {e}", exc_info=True)
             raise
@@ -415,29 +359,21 @@ class AwhpDevice(BaseDevice):
         # Ex: hid = 362001000762+U-CS532AE(LT)V3.31.bin
         if "hid" in kwargs:
             self.hid = kwargs.pop("hid")
-            match = re.search(r"(?<=V)([\d.]+)\.bin$", self.hid)
-            self.version = match and match.group(1)
+            match = re.search(r"(?<=V)([\d.]+)\.bin$", self.hid or "")
+            if match:
+                self.version = match.group(1)
             self._logger.info(
-                f"Device version is {self.version}, hid {self.hid}")
+                "Device version changed to %s, hid %s", self.version, self.hid
+            )
 
         self._properties.update(kwargs)
-
-        """
-        if self.check_version and Props.TEMP_SENSOR.value in kwargs:
-            self.check_version = False
-            temp = self.get_property(Props.TEMP_SENSOR)
-            self._logger.debug(f"Checking for temperature offset, reported temp {temp}")
-            if temp and temp < TEMP_OFFSET:
-                self.version = "4.0"
-                self._logger.info(f"Device version changed to {self.version}, hid {self.hid}")
-            self._logger.debug(f"Using device temperature {self.current_temperature}")
-        """
 
     async def push_state_update(self, wait_for: float = 30):
         """Push any pending state updates to the unit
 
         Args:
-            wait_for (object): How long to wait for an update from the device, 0 for no wait
+            wait_for (object): How long to wait for an update from the device,
+                0 for no wait
         """
         if not self._dirty:
             return
@@ -445,26 +381,21 @@ class AwhpDevice(BaseDevice):
         if not self.device_cipher:
             await self.bind()
 
-        self._logger.debug("Pushing state updates to (%s)",
-                           str(self.device_info))
+        self._logger.debug("Pushing state updates to (%s)", str(self.device_info))
 
         props = {}
         for name in self._dirty:
             value = self._properties.get(name)
-            self._logger.debug(
-                "Sending remote state update %s -> %s", name, value)
+            self._logger.debug("Sending remote state update %s -> %s", name, value)
             props[name] = value
-            """
-            if name == Props.TEMP_SET.value:
-                props[Props.TEMP_BIT.value] = self._properties.get(Props.TEMP_BIT.value)
-                props[Props.TEMP_UNIT.value] = self._properties.get(
-                    Props.TEMP_UNIT.value
-                )
-            """
+
         self._dirty.clear()
 
         try:
+            # Type check to satisfy pyright
+            if self.device_info is None:
+                raise DeviceNotBoundError("device_info is None")
             await self.send(self.create_command_message(self.device_info, **props))
 
-        except asyncio.TimeoutError:
-            raise DeviceTimeoutError
+        except asyncio.TimeoutError as err:
+            raise DeviceTimeoutError from err

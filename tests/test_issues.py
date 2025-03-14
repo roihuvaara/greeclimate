@@ -22,6 +22,7 @@ async def test_issue_69_TemSen_40_should_not_set_firmware_v4():
         await device.update_state()
         assert device.version is None
 
+
 """Tests for issue 72"""
 
 

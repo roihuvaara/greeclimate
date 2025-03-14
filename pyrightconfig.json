@@ -1,0 +1,12 @@
+{
+    "include": [
+        "gree_versati",
+        "tests"
+    ],
+    "stubPath": "stubs",
+    "typeCheckingMode": "basic",
+    "reportOptionalMemberAccess": "warning",
+    "reportGeneralTypeIssues": "warning",
+    "useLibraryCodeForTypes": true,
+    "reportMissingTypeStubs": false
+}

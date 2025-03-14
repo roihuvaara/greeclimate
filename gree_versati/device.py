@@ -1,10 +1,12 @@
 import asyncio
+import enum
 import logging
 import re
 from enum import IntEnum, unique
+from typing import Optional
 
 from gree_versati.base_device import TEMP_OFFSET, BaseDevice
-from gree_versati.exceptions import DeviceTimeoutError
+from gree_versati.exceptions import DeviceNotBoundError, DeviceTimeoutError
 
 
 @unique
@@ -109,8 +111,10 @@ TEMP_MIN_TABLE = -60
 TEMP_MAX_TABLE = 60
 TEMP_MIN_TABLE_F = -76
 TEMP_MAX_TABLE_F = 140
-TEMP_TABLE = [generate_temperature_record(x) for x in range(
-    TEMP_MIN_TABLE_F, TEMP_MAX_TABLE_F + 1)]
+TEMP_TABLE = [
+    generate_temperature_record(x)
+    for x in range(TEMP_MIN_TABLE_F, TEMP_MAX_TABLE_F + 1)
+]
 HUMIDITY_MIN = 30
 HUMIDITY_MAX = 80
 
@@ -125,7 +129,7 @@ class Device(BaseDevice):
         self.set_property(Props.POWER, int(value))
 
     @property
-    def mode(self) -> int:
+    def mode(self) -> Optional[int]:
         return self.get_property(Props.MODE)
 
     @mode.setter
@@ -158,8 +162,7 @@ class Device(BaseDevice):
     def target_temperature(self, value: int):
         def validate(val):
             if val > TEMP_MAX or val < TEMP_MIN:
-                raise ValueError(
-                    f"Specified temperature {val} is out of range.")
+                raise ValueError(f"Specified temperature {val} is out of range.")
 
         if self.temperature_units == 1:
             rec = generate_temperature_record(value)
@@ -171,7 +174,7 @@ class Device(BaseDevice):
             self.set_property(Props.TEMP_SET, int(value))
 
     @property
-    def temperature_units(self) -> int:
+    def temperature_units(self) -> Optional[int]:
         return self.get_property(Props.TEMP_UNIT)
 
     @temperature_units.setter
@@ -190,13 +193,12 @@ class Device(BaseDevice):
                 elif prop != 0:
                     return self._convert_to_units(prop - TEMP_OFFSET, bit)
             except ValueError:
-                logging.warning(
-                    "Converting unexpected set temperature value %s", prop)
+                logging.warning("Converting unexpected set temperature value %s", prop)
 
         return self.target_temperature
 
     @property
-    def fan_speed(self) -> int:
+    def fan_speed(self) -> Optional[int]:
         return self.get_property(Props.FAN_SPEED)
 
     @fan_speed.setter
@@ -245,7 +247,7 @@ class Device(BaseDevice):
         self.set_property(Props.LIGHT, int(value))
 
     @property
-    def horizontal_swing(self) -> int:
+    def horizontal_swing(self) -> Optional[int]:
         return self.get_property(Props.SWING_HORIZ)
 
     @horizontal_swing.setter
@@ -253,7 +255,7 @@ class Device(BaseDevice):
         self.set_property(Props.SWING_HORIZ, int(value))
 
     @property
-    def vertical_swing(self) -> int:
+    def vertical_swing(self) -> Optional[int]:
         return self.get_property(Props.SWING_VERT)
 
     @vertical_swing.setter
@@ -261,7 +263,7 @@ class Device(BaseDevice):
         self.set_property(Props.SWING_VERT, int(value))
 
     @property
-    def quiet(self) -> bool:
+    def quiet(self) -> Optional[bool]:
         return self.get_property(Props.QUIET)
 
     @quiet.setter
@@ -293,15 +295,17 @@ class Device(BaseDevice):
         self.set_property(Props.POWER_SAVE, int(value))
 
     @property
-    def target_humidity(self) -> int:
-        15 + (self.get_property(Props.HUM_SET) * 5)
+    def target_humidity(self) -> Optional[int]:
+        value = self.get_property(Props.HUM_SET)
+        if value is not None:
+            return 15 + (value * 5)
+        return None
 
     @target_humidity.setter
     def target_humidity(self, value: int):
         def validate(val):
             if value > HUMIDITY_MAX or val < HUMIDITY_MIN:
-                raise ValueError(
-                    f"Specified temperature {val} is out of range.")
+                raise ValueError(f"Specified temperature {val} is out of range.")
 
         self.set_property(Props.HUM_SET, (value - 15) // 5)
 
@@ -310,7 +314,7 @@ class Device(BaseDevice):
         return self.get_property(Props.DEHUMIDIFIER_MODE)
 
     @property
-    def current_humidity(self) -> int:
+    def current_humidity(self) -> Optional[int]:
         return self.get_property(Props.HUM_SENSOR)
 
     @property
@@ -322,26 +326,30 @@ class Device(BaseDevice):
         return bool(self.get_property(Props.WATER_FULL))
 
     async def update_state(self, wait_for: float = 30):
-        """Update the internal state of the device structure of the physical device, 0 for no wait
+        """Update the internal state of the device structure of the physical device.
+
+        Use 0 for no wait.
 
         Args:
-            wait_for (object): How long to wait for an update from the device
+            wait_for (float): How long to wait for an update from the device,
+                0 for no wait
         """
         if not self.device_cipher:
             await self.bind()
 
-        self._logger.debug(
-            "Updating device properties for (%s)", str(self.device_info))
+        self._logger.debug("Updating device properties for (%s)", str(self.device_info))
 
         props = [x.value for x in Props]
         if not self.hid:
             props.append("hid")
 
         try:
+            if self.device_info is None:
+                raise DeviceNotBoundError("device_info is None")
             await self.send(self.create_status_message(self.device_info, *props))
 
-        except asyncio.TimeoutError:
-            raise DeviceTimeoutError
+        except asyncio.TimeoutError as err:
+            raise DeviceTimeoutError from err
 
     def handle_state_update(self, **kwargs) -> None:
         """Handle incoming information about the firmware version of the device"""
@@ -349,30 +357,30 @@ class Device(BaseDevice):
         # Ex: hid = 362001000762+U-CS532AE(LT)V3.31.bin
         if "hid" in kwargs:
             self.hid = kwargs.pop("hid")
-            match = re.search(r"(?<=V)([\d.]+)\.bin$", self.hid)
-            self.version = match and match.group(1)
-            self._logger.info(
-                f"Device version is {self.version}, hid {self.hid}")
+            if self.hid:
+                match = re.search(r"(?<=V)([\d.]+)\.bin$", self.hid)
+                self.version = match and match.group(1)
+                self._logger.info(f"Device version is {self.version}, hid {self.hid}")
 
         self._properties.update(kwargs)
 
         if self.check_version and Props.TEMP_SENSOR.value in kwargs:
             self.check_version = False
             temp = self.get_property(Props.TEMP_SENSOR)
-            self._logger.debug(
-                f"Checking for temperature offset, reported temp {temp}")
+            self._logger.debug(f"Checking for temperature offset, reported temp {temp}")
             if temp and temp < TEMP_OFFSET:
                 self.version = "4.0"
                 self._logger.info(
-                    f"Device version changed to {self.version}, hid {self.hid}")
-            self._logger.debug(
-                f"Using device temperature {self.current_temperature}")
+                    f"Device version changed to {self.version}, hid {self.hid}"
+                )
+            self._logger.debug(f"Using device temperature {self.current_temperature}")
 
     async def push_state_update(self, wait_for: float = 30):
         """Push any pending state updates to the unit
 
         Args:
-            wait_for (object): How long to wait for an update from the device, 0 for no wait
+            wait_for (object): How long to wait for an update from the device.
+                Set to 0 for no wait.
         """
         if not self._dirty:
             return
@@ -380,18 +388,15 @@ class Device(BaseDevice):
         if not self.device_cipher:
             await self.bind()
 
-        self._logger.debug("Pushing state updates to (%s)",
-                           str(self.device_info))
+        self._logger.debug("Pushing state updates to (%s)", str(self.device_info))
 
         props = {}
         for name in self._dirty:
             value = self._properties.get(name)
-            self._logger.debug(
-                "Sending remote state update %s -> %s", name, value)
+            self._logger.debug("Sending remote state update %s -> %s", name, value)
             props[name] = value
             if name == Props.TEMP_SET.value:
-                props[Props.TEMP_BIT.value] = self._properties.get(
-                    Props.TEMP_BIT.value)
+                props[Props.TEMP_BIT.value] = self._properties.get(Props.TEMP_BIT.value)
                 props[Props.TEMP_UNIT.value] = self._properties.get(
                     Props.TEMP_UNIT.value
                 )
@@ -399,7 +404,9 @@ class Device(BaseDevice):
         self._dirty.clear()
 
         try:
+            if self.device_info is None:
+                raise DeviceNotBoundError("device_info is None")
             await self.send(self.create_command_message(self.device_info, **props))
 
-        except asyncio.TimeoutError:
-            raise DeviceTimeoutError
+        except asyncio.TimeoutError as err:
+            raise DeviceTimeoutError from err

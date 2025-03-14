@@ -1,19 +1,16 @@
 {
-    "python.linting.enabled": true,
-    "python.linting.lintOnSave": true,
-    "python.linting.flake8Enabled": true,
-    "python.pythonPath": "/usr/local/bin/python",
-    "python.testing.unittestArgs": [
-        "-v",
-        "-s",
-        "./test",
-        "-p",
-        "test_*.py"
-    ],
+    "ruff.organizeImports": true,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.ruff": "explicit",
+        "source.organizeImports.ruff": "explicit"
+    },
     "python.testing.pytestEnabled": true,
-    "python.testing.nosetestsEnabled": false,
     "python.testing.unittestEnabled": false,
     "python.testing.pytestArgs": [
         "tests"
     ],
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}"
+    ]
 }

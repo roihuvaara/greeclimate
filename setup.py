@@ -8,7 +8,7 @@ with open("requirements.txt") as f:
 
 setuptools.setup(
     name="gree_versati",
-    python_requires=">=3.8",
+    python_requires=">=3.11",
     install_requires=requirements,
     author="Clifford Roche",
     author_email="",
@@ -20,6 +20,7 @@ setuptools.setup(
     packages=setuptools.find_packages(exclude=["tests"]),
     classifiers=[
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.11",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: OS Independent",
     ],
