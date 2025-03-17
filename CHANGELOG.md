@@ -1,3 +1,7 @@
+# 1.0.0 (2025-03-17)
+
+Version 1.0.0 of gree_versati
+
 # [2.1.0](https://github.com/cmroche/greeclimate/compare/v2.0.0...v2.1.0) (2024-08-05)
 
 
