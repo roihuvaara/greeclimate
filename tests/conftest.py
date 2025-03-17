@@ -1,9 +1,10 @@
 """Pytest module configuration."""
+
 from unittest.mock import patch
 
 import pytest
 
-from greeclimate.device import Device
+from gree_versati.device import Device
 from tests.common import FakeCipher
 
 MOCK_INTERFACES = ["lo"]
@@ -15,16 +16,20 @@ MOCK_LO_IFACE = {
 @pytest.fixture(name="netifaces")
 def netifaces_fixture():
     """Patch netifaces interface discover."""
-    with patch("netifaces.interfaces", return_value=MOCK_INTERFACES), patch(
-            "netifaces.ifaddresses", return_value=MOCK_LO_IFACE
-    ) as ifaddr_mock:
+    with (
+        patch("netifaces.interfaces", return_value=MOCK_INTERFACES),
+        patch("netifaces.ifaddresses", return_value=MOCK_LO_IFACE) as ifaddr_mock,
+    ):
         yield ifaddr_mock
 
 
 @pytest.fixture(name="cipher")
 def cipher_fixture():
     """Patch the cipher object."""
-    with patch("greeclimate.device.CipherV1") as mock1, patch("greeclimate.device.CipherV2") as mock2:
+    with (
+        patch("gree_versati.cipher.CipherV1") as mock1,
+        patch("gree_versati.cipher.CipherV2") as mock2,
+    ):
         mock1.return_value = FakeCipher(b"1234567890123456")
         mock2.return_value = FakeCipher(b"1234567890123456")
         yield mock1, mock2

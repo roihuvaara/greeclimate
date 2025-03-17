@@ -3,7 +3,7 @@ from socket import SOCK_DGRAM
 from typing import Tuple, Union
 from unittest.mock import Mock
 
-from greeclimate.cipher import CipherV1, CipherBase
+from gree_versati.cipher import CipherBase, CipherV1
 
 DEFAULT_TIMEOUT = 1
 DISCOVERY_REQUEST = {"t": "scan"}
@@ -57,9 +57,7 @@ DEFAULT_REQUEST = {
     "uid": 0,
     "cid": "aabbcc112233",
     "tcid": "",
-    "pack": {
-        "t": "test"
-    }
+    "pack": {"t": "test"},
 }
 DEFAULT_RESPONSE = {
     "t": "pack",
@@ -67,9 +65,7 @@ DEFAULT_RESPONSE = {
     "uid": 0,
     "cid": "aabbcc112233",
     "tcid": "",
-    "pack": {
-        "t": "testresponse"
-    }
+    "pack": {"t": "testresponse"},
 }
 
 
@@ -134,4 +130,5 @@ class Responder:
 
     def __exit__(self, *args):
         """Exit the context manager."""
-        self.sock.close()
+        if self.sock:
+            self.sock.close()

@@ -6,20 +6,20 @@ from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
 
-from greeclimate.discovery import Discovery, Listener
+from gree_versati.discovery import Discovery, Listener
+
 from .common import (
     DEFAULT_TIMEOUT,
     DISCOVERY_REQUEST,
     DISCOVERY_RESPONSE,
     Responder,
-    get_mock_device_info, encrypt_payload,
+    encrypt_payload,
+    get_mock_device_info,
 )
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "addr,family", [(("127.0.0.1", 7000), socket.AF_INET)]
-)
+@pytest.mark.parametrize("addr,family", [(("127.0.0.1", 7000), socket.AF_INET)])
 async def test_discover_devices(netifaces, addr, family):
     netifaces.return_value = {
         2: [{"addr": addr[0], "netmask": "255.0.0.0", "peer": addr[0]}]
@@ -70,12 +70,8 @@ async def test_discover_no_devices(netifaces):
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "addr,family", [(("127.0.0.1", 7000), socket.AF_INET)]
-)
-async def test_discover_deduplicate_multiple_discoveries(
-    netifaces, addr, family
-):
+@pytest.mark.parametrize("addr,family", [(("127.0.0.1", 7000), socket.AF_INET)])
+async def test_discover_deduplicate_multiple_discoveries(netifaces, addr, family):
     netifaces.return_value = {
         2: [{"addr": addr[0], "netmask": "255.0.0.0", "peer": addr[0]}]
     }
@@ -112,9 +108,7 @@ async def test_discover_deduplicate_multiple_discoveries(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "addr,family", [(("127.0.0.1", 7000), socket.AF_INET)]
-)
+@pytest.mark.parametrize("addr,family", [(("127.0.0.1", 7000), socket.AF_INET)])
 async def test_discovery_events(netifaces, addr, family):
     netifaces.return_value = {
         2: [{"addr": addr[0], "netmask": "255.0.0.0", "peer": addr[0]}]
@@ -189,9 +183,7 @@ async def test_discovery_device_update_events():
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "addr,family", [(("127.0.0.1", 7000), socket.AF_INET)]
-)
+@pytest.mark.parametrize("addr,family", [(("127.0.0.1", 7000), socket.AF_INET)])
 async def test_discover_devices_bad_data(netifaces, addr, family):
     """Create a socket broadcast responder, an async broadcast listener,
     test discovery responses.

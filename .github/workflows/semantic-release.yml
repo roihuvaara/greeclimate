@@ -1,0 +1,40 @@
+name: Semantic Release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write      # Needed for releasing
+      issues: write        # Needed for commenting on issues
+      pull-requests: write # Needed for commenting on PRs
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 25  # Limit history to reduce API calls
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install semantic-release plugins
+        run: |
+          npm install -D @semantic-release/changelog
+          npm install -D @semantic-release/git
+      
+      - name: Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Limit API requests to avoid GitHub rate limiting
+          GH_FETCH_DEPTH: 25
+        run: npx semantic-release --debug 

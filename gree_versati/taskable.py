@@ -4,7 +4,7 @@ import asyncio
 import logging
 from asyncio import Task
 from asyncio.events import AbstractEventLoop
-from typing import List, Coroutine
+from typing import List, Optional
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -12,12 +12,12 @@ _LOGGER = logging.getLogger(__name__)
 class Taskable:
     """Mixin class for objects that can be run as tasks."""
 
-    def __init__(self, loop: AbstractEventLoop = None):
+    def __init__(self, loop: Optional[AbstractEventLoop] = None):
         self._loop: AbstractEventLoop = loop or asyncio.get_event_loop()
-        self._tasks = []
+        self._tasks: List[Task] = []
 
     @property
-    def tasks(self) -> List[Coroutine]:
+    def tasks(self) -> List[Task]:
         """Returns the outstanding tasks waiting completion."""
         return self._tasks
 
@@ -32,4 +32,3 @@ class Taskable:
         self._tasks.append(task)
         task.add_done_callback(self._task_done_callback)
         return task
-

@@ -1,0 +1,44 @@
+{
+	"name": "Gree Versati Python 3",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "app",
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"python.defaultInterpreterPath": "/usr/local/bin/python",
+				// Disable default linting and formatting
+				"python.linting.enabled": false,
+				"python.linting.pylintEnabled": false,
+				"python.formatting.provider": "none",
+				// Ruff configuration - updated for native integration
+				"ruff.enable": true,
+				"ruff.format.enable": true,
+				"ruff.organizeImports": true,
+				// Pyright configuration for type checking
+				"python.analysis.typeCheckingMode": "basic",
+				"python.analysis.diagnosticMode": "workspace",
+				"python.analysis.autoImportCompletions": true,
+				"editor.formatOnSave": true,
+				"editor.codeActionsOnSave": {
+					"source.fixAll.ruff": true,
+					"source.organizeImports.ruff": true
+				}
+			},
+			"extensions": [
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"charliermarsh.ruff",
+				"ms-vscode-remote.remote-containers"
+			]
+		}
+	},
+	"features": {
+		"ghcr.io/devcontainers/features/git:1": {
+			"version": "latest",
+			"ppa": false
+		}
+	},
+	"postCreateCommand": "pip install --user -r requirements.txt -r requirements-test.txt ruff pyright && pip install -e .",
+	"remoteUser": "vscode",
+	"workspaceFolder": "/workspace"
+}

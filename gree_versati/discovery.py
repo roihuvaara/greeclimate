@@ -5,11 +5,12 @@ import logging
 from asyncio import Task
 from asyncio.events import AbstractEventLoop
 from ipaddress import IPv4Address
+from typing import Optional
 
-from greeclimate.cipher import CipherV1
-from greeclimate.device import DeviceInfo
-from greeclimate.network import BroadcastListenerProtocol, IPAddr
-from greeclimate.taskable import Taskable
+from gree_versati.cipher import CipherV1
+from gree_versati.deviceinfo import DeviceInfo
+from gree_versati.network import BroadcastListenerProtocol, IPAddr
+from gree_versati.taskable import Taskable
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,13 +36,14 @@ class Discovery(BroadcastListenerProtocol, Listener, Taskable):
         self,
         timeout: int = 2,
         allow_loopback: bool = False,
-        loop: AbstractEventLoop = None,
+        loop: Optional[AbstractEventLoop] = None,
     ) -> None:
         """Initialized the discovery manager.
 
         Args:
             timeout (int): Wait this long for responses to the scan request
-            allow_loopback (bool): Allow scanning the loopback interface, default `False`
+            allow_loopback (bool): Allow scanning the loopback interface,
+                default is `False`
             loop (AbstractEventLoop): Async event loop
         """
         BroadcastListenerProtocol.__init__(self, timeout)
@@ -58,7 +60,7 @@ class Discovery(BroadcastListenerProtocol, Listener, Taskable):
         return self._device_infos
 
     # Listener management
-    def add_listener(self, listener: Listener) -> list[Task]:
+    def add_listener(self, listener: Listener) -> Optional[list[Task]]:
         """Add a listener that will receive discovery events.
 
         Adding a listener will cause all currently known device to trigger a
@@ -68,11 +70,13 @@ class Discovery(BroadcastListenerProtocol, Listener, Taskable):
             listener (Listener): A listener object which will receive events
 
         Returns:
-            List[Coro]: List of tasks for device found events.
+            List[Coro] | None: List of tasks for device found events,
+                or None if the listener already exists.
         """
         if listener not in self._listeners:
             self._listeners.append(listener)
             return [self._create_task(listener.device_found(x)) for x in self.devices]
+        return None  # Return None if listener already exists
 
     def remove_listener(self, listener: Listener) -> bool:
         """Remove a listener that has already been registered.
@@ -105,7 +109,10 @@ class Discovery(BroadcastListenerProtocol, Listener, Taskable):
                     # ip address info may have been updated, so store the new info
                     # and trigger a `device_update` event.
                     self._device_infos[index] = device_info
-                    tasks = [l.device_update(device_info) for l in self._listeners]
+                    tasks = [
+                        listener.device_update(device_info)
+                        for listener in self._listeners
+                    ]
                     await asyncio.gather(*tasks, return_exceptions=True)
                 return
 
@@ -113,7 +120,8 @@ class Discovery(BroadcastListenerProtocol, Listener, Taskable):
 
         _LOGGER.info("Found gree device %s", str(device_info))
 
-        tasks = [l.device_found(device_info) for l in self._listeners]
+        tasks = [listener.device_found(device_info)
+                 for listener in self._listeners]
         await asyncio.gather(*tasks, return_exceptions=True)
 
     def packet_received(self, obj, addr: IPAddr) -> None:
@@ -136,7 +144,9 @@ class Discovery(BroadcastListenerProtocol, Listener, Taskable):
         self._create_task(self.device_found(DeviceInfo(*device)))
 
     # Discovery
-    async def scan(self, wait_for: int = 0, bcast_ifaces: list[IPv4Address] | None = None) -> list[DeviceInfo]:
+    async def scan(
+        self, wait_for: int = 0, bcast_ifaces: list[IPv4Address] | None = None
+    ) -> list[DeviceInfo]:
         """Sends a discovery broadcast packet on each network interface to
             locate Gree units on the network
 
@@ -192,10 +202,14 @@ class Discovery(BroadcastListenerProtocol, Listener, Taskable):
 
         await self.send({"t": "scan"}, (str(bcast_iface), 7000))
 
-    async def search_devices(self, broadcastAddrs: list[IPv4Address] | None = None) -> None:
+    async def search_devices(
+        self, broadcastAddrs: list[IPv4Address] | None = None
+    ) -> None:
         """Search for devices with specific broadcast addresses."""
         if not broadcastAddrs:
             broadcastAddrs = self._get_broadcast_addresses()
         await asyncio.gather(
-            *[asyncio.create_task(self.search_on_interface(b)) for b in broadcastAddrs], return_exceptions=True
+            *[asyncio.create_task(self.search_on_interface(b))
+              for b in broadcastAddrs],
+            return_exceptions=True,
         )

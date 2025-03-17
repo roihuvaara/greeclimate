@@ -1,13 +1,14 @@
-![Python package](https://github.com/cmroche/greeclimate/workflows/Python%20package/badge.svg)
+![Python package](https://github.com/roihuvaara/greeclimate/workflows/Python%20package/badge.svg)
 
-## Gree Climate
+## Gree Versati
 
-Discover, connect and control Gree based mini-split systems.
+Discover, connect and control Gree based Versati series heat pumps.
 
-**greeclimate** is a ***fully async*** Python3 based package for controlling Gree based ACs and heat pumps. Gree is a common brand for mini-split systems and is licensed and resold under many product names. This module should work for any device that also works with the Gree+ app, but has been tested on
+**gree_versati** is a ***fully async*** Python3 based package for controlling Gree Versati series heat pumps. This is a fork of the [greeclimate](https://github.com/cmroche/greeclimate) package by Clifford Roche, modified to work with Gree Versati series heat pumps.
 
-- Proklima mini-splits units
-- Trane mini-split heat pump (4TXK38)
+This module has been tested on:
+
+- Gree Versati Nordic 10 series heat pump
 
 _If you have tested and know of others systems that work, please fork and submit a PR with the make and model_
 
@@ -17,10 +18,21 @@ _If you have tested and know of others systems that work, please fork and submit
 
 ## Getting the package
 
-The easiest way to grab **greeclimate** is through PyPI
-`pip3 install greeclimate`
+Currently, **gree_versati** needs to be installed directly from GitHub:
 
-## Use Gree Climate
+```bash
+pip install git+https://github.com/roihuvaara/greeclimate.git
+```
+
+Once the package is published to PyPI, you'll be able to install it with:
+
+```bash
+pip install gree_versati
+```
+
+## Use Gree Versati
+
+The rest of this readme is from greeclimate so it might not fully match with gree_versati.
 
 ### Finding and binding to devices
 
