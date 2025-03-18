@@ -4,14 +4,16 @@ branches:
   - master
   - main
 ci: true
-# Force the initial version to be 1.0.0
-firstRelease: 1.0.0
 plugins:
   - "@semantic-release/commit-analyzer"
-  - "@semantic-release/release-notes-generator"
+  - - "@semantic-release/release-notes-generator"
+    - preset: "angular"
+      writerOpts:
+        commitsSort: ["subject", "scope"]
   - "@semantic-release/github"
   - - "@semantic-release/changelog"
     - changelogFile: CHANGELOG.md
+      changelogTitle: "# Changelog\n\nAll notable changes to this project will be documented in this file."
   - - "@semantic-release/git"
     - assets: ["CHANGELOG.md", "setup.py", "setup.cfg"]
 

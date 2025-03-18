@@ -281,6 +281,66 @@ class AwhpDevice(BaseDevice):
         self.set_property(AwhpProps.WATER_SYS_EXH_SWH, int(value))
 
     @property
+    def tank_heater_status(self) -> bool:
+        return bool(self.get_property(AwhpProps.TANK_HEATER_STATUS))
+
+    @property
+    def system_defrosting_status(self) -> bool:
+        return bool(self.get_property(AwhpProps.SYSTEM_DEFROSTING_STATUS))
+
+    @property
+    def hp_heater_1_status(self) -> bool:
+        return bool(self.get_property(AwhpProps.HP_HEATER_1_STATUS))
+
+    @property
+    def hp_heater_2_status(self) -> bool:
+        return bool(self.get_property(AwhpProps.HP_HEATER_2_STATUS))
+
+    @property
+    def automatic_frost_protection(self) -> bool:
+        return bool(self.get_property(AwhpProps.AUTOMATIC_FROST_PROTECTION))
+
+    @property
+    def temp_unit(self) -> Optional[int]:
+        return self.get_property(AwhpProps.TEMP_UNIT)
+
+    @property
+    def temp_rec(self) -> Optional[int]:
+        return self.get_property(AwhpProps.TEMP_REC)
+
+    @property
+    def all_err(self) -> Optional[int]:
+        return self.get_property(AwhpProps.ALL_ERR)
+
+    @property
+    def temp_rec_b(self) -> Optional[int]:
+        return self.get_property(AwhpProps.TEMP_REC_B)
+
+    @property
+    def quiet(self) -> bool:
+        return bool(self.get_property(AwhpProps.QUIET))
+
+    @property
+    def bord_test(self) -> bool:
+        return bool(self.get_property(AwhpProps.BORD_TEST))
+
+    @property
+    def col_colet_swh(self) -> bool:
+        return bool(self.get_property(AwhpProps.COL_COLET_SWH))
+
+    @property
+    def end_temp_cot_swh(self) -> bool:
+        return bool(self.get_property(AwhpProps.END_TEMP_COT_SWH))
+
+    @property
+    def model_type(self) -> Optional[int]:
+        return self.get_property(AwhpProps.MODEL_TYPE)
+
+    @property
+    def evu(self) -> bool:
+        return bool(self.get_property(AwhpProps.EVU))
+
+    @property
     def power(self) -> bool:
         return bool(self.get_property(AwhpProps.POWER))
 

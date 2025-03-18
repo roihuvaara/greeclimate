@@ -1,6 +1,13 @@
-# 1.0.0 (2025-03-17)
+# Changelog
 
-Version 1.0.0 of gree_versati
+All notable changes to this project will be documented in this file.
+
+## 1.0.0 (2023-03-17)
+
+Initial stable release of gree_versati with the following features:
+- Support for Gree Versati series heat pumps
+- Device discovery and communication
+- Device control and monitoring capabilities
 
 # [2.1.0](https://github.com/cmroche/greeclimate/compare/v2.0.0...v2.1.0) (2024-08-05)
 
