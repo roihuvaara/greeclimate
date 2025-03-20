@@ -10,12 +10,16 @@ plugins:
     - preset: "angular"
       writerOpts:
         commitsSort: ["subject", "scope"]
+  - - "@semantic-release/exec"
+    - prepareCmd: "sed -i 's/__version__ = \".*\"/__version__ = \"${nextRelease.version}\"/' gree_versati/__init__.py"
+      successCmd: "echo 'Version bumped to ${nextRelease.version}'"
   - "@semantic-release/github"
   - - "@semantic-release/changelog"
     - changelogFile: CHANGELOG.md
       changelogTitle: "# Changelog\n\nAll notable changes to this project will be documented in this file."
   - - "@semantic-release/git"
-    - assets: ["CHANGELOG.md", "setup.py", "setup.cfg"]
+    - assets: ["CHANGELOG.md", "gree_versati/__init__.py", "setup.py", "setup.cfg"]
+      message: "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
 
 # Note: Semantic-release is no longer used.
 # This project now uses a manual release workflow.
