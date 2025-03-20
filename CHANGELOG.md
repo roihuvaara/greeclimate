@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.1](https://github.com/roihuvaara/greeclimate/compare/r1.0.0...r1.0.1) (2025-03-20)
+
+
+### Bug Fixes
+
+* Add missing getters and tests with formatting ([dd4adbf](https://github.com/roihuvaara/greeclimate/commit/dd4adbf46f6d03d0000883f7dbfaf91397b208f9))
+* Automatically update python package version ([454e979](https://github.com/roihuvaara/greeclimate/commit/454e9790d701b461d12c2b62ce251ec02550821b))
+
 ## 1.0.0 (2023-03-17)
 
 Initial stable release of gree_versati with the following features:
