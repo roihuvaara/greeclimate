@@ -63,7 +63,8 @@ class DeviceProtocolBase2(asyncio.DatagramProtocol):
             obj (JSON): Json object with decoded UDP data
             addr (IPAddr): Endpoint address of the sender
         """
-        raise NotImplementedError("packet_received must be implemented in a subclass")
+        raise NotImplementedError(
+            "packet_received must be implemented in a subclass")
 
     @property
     def device_cipher(self) -> Optional[CipherBase]:
@@ -112,7 +113,8 @@ class DeviceProtocolBase2(asyncio.DatagramProtocol):
 
         # In this case the connection was closed unexpectedly
         if exc is not None:
-            _LOGGER.exception("Connection was closed unexpectedly", exc_info=exc)
+            _LOGGER.exception(
+                "Connection was closed unexpectedly", exc_info=exc)
             raise exc
 
     def error_received(self, exc: Exception) -> None:
@@ -139,38 +141,25 @@ class DeviceProtocolBase2(asyncio.DatagramProtocol):
             data (bytes): Raw data to decode
             addr (IPAddr): The source address
         """
+        _LOGGER.debug(
+            f"Raw datagram received from {addr}: {data[:100]}...")  # Log first 100 bytes to avoid huge logs
+
+        if len(data) == 0:
+            _LOGGER.warning("Received empty datagram")
+            return
+
         try:
-            data_str = data.decode("utf-8")
-            _LOGGER.debug(f"Received raw packet: {data_str}")
-            json_data = json.loads(data_str)
+            obj = json.loads(data)
+            _LOGGER.debug(f"Decoded JSON: {obj}")
 
-            _LOGGER.debug("Received packet:")
-            _LOGGER.debug(json_data)
+            if obj.get("pack") and self._cipher is not None:
+                _LOGGER.debug("Attempting to decrypt pack")
+                obj["pack"] = self._cipher.decrypt(obj["pack"])
+                _LOGGER.debug(f"Decrypted pack: {obj['pack']}")
 
-            if "pack" in json_data and json_data.get("t") == "pack":
-                # Must be encrypted, attempt to decrypt
-                if self._cipher is not None:
-                    decrypted = self._cipher.decrypt(json_data["pack"])
-                    _LOGGER.debug(f"Decrypted packet data: {decrypted}")
-                    if decrypted:
-                        if isinstance(decrypted, (str, bytes, bytearray)):
-                            try:
-                                json_data["pack"] = json.loads(decrypted)
-                            except json.JSONDecodeError:
-                                _LOGGER.warning(
-                                    f"Failed to decode decrypted data as JSON: "
-                                    f"{decrypted}"
-                                )
-                        elif isinstance(decrypted, dict):
-                            json_data["pack"] = decrypted
-                        else:
-                            _LOGGER.warning(
-                                f"Unexpected decrypted data type: {type(decrypted)}"
-                            )
-                else:
-                    _LOGGER.warning("Encrypted data received but no cipher available")
-
-            self.packet_received(json_data, addr)
+            _LOGGER.debug("Received packet from %s:\n<- %s",
+                          addr[0], json.dumps(obj))
+            self.packet_received(obj, addr)
 
         except json.JSONDecodeError as e:
             _LOGGER.error(f"Failed to decode JSON from datagram: {e}")
@@ -183,34 +172,29 @@ class DeviceProtocolBase2(asyncio.DatagramProtocol):
         """Send encode and send JSON command to the device.
 
         Args:
-            obj: Some object to encode, must be JSON serializable
-            addr (IPAddr): The source address
-            cipher (CipherBase): Override the current cipher in the packet
+            obj (dict): Object to send
+            addr (IPAddr, optional): Address to send the message
+            cipher (CipherBase, optional): Initial cipher to use for SCANNING and BINDING
         """
-        if not obj:
-            return None
+        _LOGGER.debug("Sending packet:\n-> %s", json.dumps(obj))
 
-        _LOGGER.debug(f"Sending request: {obj}")
+        if obj.get("pack"):
+            if obj.get("i") == 1:
+                if cipher is None:
+                    raise ValueError(
+                        "Cipher must be supplied for SCAN or BIND messages")
+                self._cipher = cipher  # Ensure cipher is set before we try to use it
 
-        if "pack" in obj and cipher:
-            # The pack is typically the encrypted field
-            pack = json.dumps(obj["pack"], separators=(",", ":"))
-            if cipher is not None:
-                encrypt = cipher.encrypt(str(pack))
-                _LOGGER.debug(f"Encrypted data: {encrypt}")
-                obj["pack"] = encrypt
+            if self._cipher is not None:
+                pack, tag = self._cipher.encrypt(obj["pack"])
+                obj["pack"] = pack
+                if tag:
+                    obj["tag"] = tag
 
-        data = json.dumps(obj, separators=(",", ":")).encode("utf-8")
-
-        if not self._transport:
-            _LOGGER.error("Not sending packet, transport is None")
-            return None
-
-        try:
-            if self._transport is not None:
-                self._transport.sendto(data, addr)
-        except (OSError, AttributeError) as e:
-            _LOGGER.error(f"Error sending packet: {e}")
+        data_bytes = json.dumps(obj).encode()
+        if self._transport is None:
+            raise RuntimeError("Transport is not initialized")
+        self._transport.sendto(data_bytes, addr)
 
         task = asyncio.create_task(self._drained.wait())
         await asyncio.wait_for(task, self._timeout)
@@ -280,10 +264,10 @@ class DeviceProtocol2(DeviceProtocolBase2):
         params = {
             Response.BIND_OK.value: lambda o, a: [o["pack"]["key"]],
             Response.DATA.value: lambda o, a: [
-                dict(zip(o["pack"]["cols"], o["pack"]["dat"], strict=True))
+                dict(zip(o["pack"]["cols"], o["pack"]["dat"], strict=False))
             ],
             Response.RESULT.value: lambda o, a: [
-                dict(zip(o["pack"]["opt"], o["pack"]["val"], strict=True))
+                dict(zip(o["pack"]["opt"], o["pack"]["val"], strict=False))
             ],
         }
         handlers = {

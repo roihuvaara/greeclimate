@@ -83,7 +83,8 @@ class BaseDevice(DeviceProtocol2, Taskable):
 
         if key:
             if not cipher:
-                raise ValueError("cipher must be provided when key is provided")
+                raise ValueError(
+                    "cipher must be provided when key is provided")
             else:
                 cipher.key = key
                 self.device_cipher = cipher
@@ -97,7 +98,8 @@ class BaseDevice(DeviceProtocol2, Taskable):
                 lambda: self, remote_addr=(self.device_info.ip, self.device_info.port)
             )
 
-        self._logger.info("Starting device binding to %s", str(self.device_info))
+        self._logger.info("Starting device binding to %s",
+                          str(self.device_info))
 
         try:
             if cipher is not None:
@@ -105,19 +107,23 @@ class BaseDevice(DeviceProtocol2, Taskable):
             else:
                 """ Try binding with CipherV1 first, if that fails try CipherV2"""
                 try:
-                    self._logger.info("Attempting to bind to device using CipherV1")
+                    self._logger.info(
+                        "Attempting to bind to device using CipherV1")
                     await self.__bind_internal(CipherV1())
                 except asyncio.TimeoutError:
-                    self._logger.info("Attempting to bind to device using CipherV2")
+                    self._logger.info(
+                        "Attempting to bind to device using CipherV2")
                     await self.__bind_internal(CipherV2())
 
         except asyncio.TimeoutError as err:
-            raise DeviceTimeoutError from err
+            self._logger.error("Timeout binding to device")
+            raise DeviceTimeoutError() from err
 
         if not self.device_cipher:
             raise DeviceNotBoundError
         else:
-            self._logger.info("Bound to device using key %s", self.device_cipher.key)
+            self._logger.info("Bound to device using key %s",
+                              self.device_cipher.key)
 
     async def __bind_internal(self, cipher: Union[CipherV1, CipherV2]):
         """Internal binding procedure, do not call directly"""
@@ -125,7 +131,12 @@ class BaseDevice(DeviceProtocol2, Taskable):
             raise DeviceNotBoundError
         await self.send(self.create_bind_message(self.device_info), cipher=cipher)
         task = asyncio.create_task(self.ready.wait())
-        await asyncio.wait_for(task, timeout=self._bind_timeout)
+        try:
+            await asyncio.wait_for(task, timeout=self._bind_timeout)
+        except asyncio.TimeoutError:
+            # Cancel the task if it times out
+            task.cancel()
+            raise
 
     def handle_device_bound(self, key: str) -> None:
         """Handle the device bound message from the device"""
