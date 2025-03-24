@@ -152,10 +152,18 @@ class DeviceProtocolBase2(asyncio.DatagramProtocol):
             obj = json.loads(data)
             _LOGGER.debug(f"Decoded JSON: {obj}")
 
-            if obj.get("pack") and self._cipher is not None:
+            if obj.get("pack"):
                 _LOGGER.debug("Attempting to decrypt pack")
-                obj["pack"] = self._cipher.decrypt(obj["pack"])
-                _LOGGER.debug(f"Decrypted pack: {obj['pack']}")
+                try:
+                    if self._cipher is not None:
+                        obj["pack"] = self._cipher.decrypt(obj["pack"])
+                        _LOGGER.debug(f"Decrypted pack: {obj['pack']}")
+                    else:
+                        _LOGGER.warning(
+                            "Encrypted data received but no cipher available")
+                except Exception as e:
+                    _LOGGER.error(
+                        f"Error decrypting packet: {e}", exc_info=True)
 
             _LOGGER.debug("Received packet from %s:\n<- %s",
                           addr[0], json.dumps(obj))
@@ -185,11 +193,14 @@ class DeviceProtocolBase2(asyncio.DatagramProtocol):
                         "Cipher must be supplied for SCAN or BIND messages")
                 self._cipher = cipher  # Ensure cipher is set before we try to use it
 
-            if self._cipher is not None:
-                pack, tag = self._cipher.encrypt(obj["pack"])
-                obj["pack"] = pack
-                if tag:
-                    obj["tag"] = tag
+            # Unconditionally encrypt the packet if we're sending a pack
+            if self._cipher is None:
+                raise ValueError("Cipher not available for encrypting packet")
+
+            pack, tag = self._cipher.encrypt(obj["pack"])
+            obj["pack"] = pack
+            if tag:
+                obj["tag"] = tag
 
         data_bytes = json.dumps(obj).encode()
         if self._transport is None:
