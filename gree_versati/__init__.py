@@ -11,7 +11,7 @@ from gree_versati.device import Device
 from gree_versati.discovery import Discovery, Listener
 from gree_versati.exceptions import DeviceNotBoundError, DeviceTimeoutError
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 
 # Define what should be importable directly from the package
 __all__ = [
