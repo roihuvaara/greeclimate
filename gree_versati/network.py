@@ -142,7 +142,9 @@ class DeviceProtocolBase2(asyncio.DatagramProtocol):
             addr (IPAddr): The source address
         """
         _LOGGER.debug(
-            f"Raw datagram received from {addr}: {data[:100]}...")  # Log first 100 bytes to avoid huge logs
+            # Log first 100 bytes to avoid huge logs
+            f"Raw datagram received from {addr}: {data[:100]}..."
+        )
 
         if len(data) == 0:
             _LOGGER.warning("Received empty datagram")
@@ -182,7 +184,8 @@ class DeviceProtocolBase2(asyncio.DatagramProtocol):
         Args:
             obj (dict): Object to send
             addr (IPAddr, optional): Address to send the message
-            cipher (CipherBase, optional): Initial cipher to use for SCANNING and BINDING
+            cipher (CipherBase, optional): Initial cipher to use for SCANNING
+                and BINDING
         """
         _LOGGER.debug("Sending packet:\n-> %s", json.dumps(obj))
 

@@ -386,10 +386,11 @@ class AwhpDevice(BaseDevice):
         # Split into batches of 23 properties to get all properties in 2 calls
         batch_size = 23
         property_batches = [
-            all_props[i : i + batch_size] for i in range(0, len(all_props), batch_size)
+            all_props[i: i + batch_size] for i in range(0, len(all_props), batch_size)
         ]
 
-        self._logger.debug(f"Split properties into {len(property_batches)} batches")
+        self._logger.debug(
+            f"Split properties into {len(property_batches)} batches")
 
         try:
             for i, batch in enumerate(property_batches):
@@ -399,8 +400,9 @@ class AwhpDevice(BaseDevice):
                 # Type check to satisfy pyright
                 if self.device_info is None:
                     raise DeviceNotBoundError("device_info is None")
+
                 await self.send(self.create_status_message(self.device_info, *batch))
-                self._logger.debug(f"Received batch {i + 1}")
+                self._logger.debug(f"Processed batch {i + 1}")
 
             self._logger.debug(
                 f"All batches complete. Current device properties: {self._properties}"
@@ -441,12 +443,14 @@ class AwhpDevice(BaseDevice):
         if not self.device_cipher:
             await self.bind()
 
-        self._logger.debug("Pushing state updates to (%s)", str(self.device_info))
+        self._logger.debug("Pushing state updates to (%s)",
+                           str(self.device_info))
 
         props = {}
         for name in self._dirty:
             value = self._properties.get(name)
-            self._logger.debug("Sending remote state update %s -> %s", name, value)
+            self._logger.debug(
+                "Sending remote state update %s -> %s", name, value)
             props[name] = value
 
         self._dirty.clear()
