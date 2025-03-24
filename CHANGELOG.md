@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.4](https://github.com/roihuvaara/greeclimate/compare/r1.0.3...r1.0.4) (2025-03-24)
+
+
+### Bug Fixes
+
+* Fix binding timeout and properties retrieval ([c023a5b](https://github.com/roihuvaara/greeclimate/commit/c023a5b8f1d052d7cd0f7126894782db145779a7))
+
 ## [1.0.3](https://github.com/roihuvaara/greeclimate/compare/r1.0.2...r1.0.3) (2025-03-24)
 
 
