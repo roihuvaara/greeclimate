@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.5](https://github.com/roihuvaara/greeclimate/compare/r1.0.4...r1.0.5) (2025-03-25)
+
+
+### Bug Fixes
+
+* Remove strict=False parameter from zip() calls to fix Python 3.13 compatibility ([03dfdb0](https://github.com/roihuvaara/greeclimate/commit/03dfdb0d55a1703cfd9665035b4b3a91753d3890))
+
 ## [1.0.4](https://github.com/roihuvaara/greeclimate/compare/r1.0.3...r1.0.4) (2025-03-24)
 
 
