@@ -38,6 +38,7 @@ target-version = "py311"
 [tool.ruff.lint]
 # Enable flake8-bugbear (`B`) rules.
 select = ["E", "F", "B", "I", "W", "C90"]
+ignore = ["B905"]  # Ignore rule requiring explicit strict parameter in zip()
 
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"

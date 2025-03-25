@@ -141,8 +141,8 @@ class DeviceProtocolBase2(asyncio.DatagramProtocol):
             data (bytes): Raw data to decode
             addr (IPAddr): The source address
         """
+        # Log first 100 bytes to avoid huge logs
         _LOGGER.debug(
-            # Log first 100 bytes to avoid huge logs
             f"Raw datagram received from {addr}: {data[:100]}..."
         )
 
@@ -278,10 +278,10 @@ class DeviceProtocol2(DeviceProtocolBase2):
         params = {
             Response.BIND_OK.value: lambda o, a: [o["pack"]["key"]],
             Response.DATA.value: lambda o, a: [
-                dict(zip(o["pack"]["cols"], o["pack"]["dat"], strict=False))
+                dict(zip(o["pack"]["cols"], o["pack"]["dat"]))
             ],
             Response.RESULT.value: lambda o, a: [
-                dict(zip(o["pack"]["opt"], o["pack"]["val"], strict=False))
+                dict(zip(o["pack"]["opt"], o["pack"]["val"]))
             ],
         }
         handlers = {
