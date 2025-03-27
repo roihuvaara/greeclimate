@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.6](https://github.com/roihuvaara/greeclimate/compare/r1.0.5...r1.0.6) (2025-03-27)
+
+
+### Bug Fixes
+
+* Set drained when receiving response ([cf142c0](https://github.com/roihuvaara/greeclimate/commit/cf142c0c6bfaba66a91fea6763d67544692d8a12))
+
 ## [1.0.5](https://github.com/roihuvaara/greeclimate/compare/r1.0.4...r1.0.5) (2025-03-25)
 
 
