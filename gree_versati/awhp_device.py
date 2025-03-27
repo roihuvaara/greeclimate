@@ -431,7 +431,22 @@ class AwhpDevice(BaseDevice):
                 "Device version changed to %s, hid %s", self.version, self.hid
             )
 
+        # Store previous property values for comparison
+        previous_properties = {k: v for k, v in self._properties.items() if k in kwargs}
+
+        # Update properties with new values
         self._properties.update(kwargs)
+
+        # Log property changes
+        for key, new_value in kwargs.items():
+            old_value = previous_properties.get(key, "N/A")
+            if old_value != new_value:
+                self._logger.info("Property updated: %s changed from %s to %s", key, old_value, new_value)
+            else:
+                self._logger.debug("Property unchanged: %s remains %s", key, new_value)
+
+        self._logger.debug("Properties after update: %s",
+                          {k: v for k, v in self._properties.items() if k in kwargs})
 
     async def push_state_update(self, wait_for: float = 30):
         """Push any pending state updates to the unit
