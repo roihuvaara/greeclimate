@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.7](https://github.com/roihuvaara/greeclimate/compare/r1.0.6...r1.0.7) (2025-03-27)
+
+
+### Bug Fixes
+
+* Wait for batch ([fe37024](https://github.com/roihuvaara/greeclimate/commit/fe37024149fb24449c14963a7a3964ff35c04f8f))
+
 ## [1.0.6](https://github.com/roihuvaara/greeclimate/compare/r1.0.5...r1.0.6) (2025-03-27)
 
 
