@@ -569,3 +569,67 @@ def test_device_key_get_set():
 
     # Assert
     assert protocol.device_key == key
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "response",
+    [
+        # Test data response
+        {
+            "pack": {
+                "t": "dat",
+                "cols": ["test"],
+                "dat": ["value"]
+            }
+        },
+        # Test bind response
+        {
+            "pack": {
+                "t": "bindok",
+                "key": "fake-key"
+            }
+        },
+        # Test result response
+        {
+            "pack": {
+                "t": "res",
+                "opt": ["test"],
+                "val": ["value"]
+            }
+        },
+        # Test unknown response type
+        {
+            "pack": {
+                "t": "unknown"
+            }
+        },
+        # Test invalid response (no pack)
+        {
+            "invalid": "data"
+        },
+        # Test invalid response (no t in pack)
+        {
+            "pack": {
+                "invalid": "data"
+            }
+        }
+    ]
+)
+async def test_drained_event_set_after_response(response):
+    """Test that the _drained event is set after receiving a response.
+    
+    Tests various response types and error cases to ensure _drained is always set.
+    """
+    # Arrange
+    protocol = DeviceProtocol2()
+    protocol.device_cipher = FakeCipher(b"1234567890123456")
+
+    # Clear the drained event (it's set in __init__)
+    protocol._drained.clear()
+
+    # Act
+    protocol.packet_received(response, ("0.0.0.0", 0))
+
+    # Assert
+    assert protocol._drained.is_set()

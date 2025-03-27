@@ -310,6 +310,9 @@ class DeviceProtocol2(DeviceProtocolBase2):
                 for callback in self._handlers.get(Response(resp), []):
                     callback(*param)
 
+            # Set _drained event to indicate we've received a response
+            self._drained.set()
+
     def handle_unknown_packet(self, obj, addr: IPAddr) -> None:
         _LOGGER.warning(
             "Received unknown packet from %s:\n%s", addr[0], json.dumps(obj)
