@@ -401,7 +401,10 @@ class AwhpDevice(BaseDevice):
                 if self.device_info is None:
                     raise DeviceNotBoundError("device_info is None")
 
+                # Send the request and wait for response
                 await self.send(self.create_status_message(self.device_info, *batch))
+                # Wait for the response to be processed
+                await asyncio.wait_for(self._drained.wait(), wait_for)
                 self._logger.debug(f"Processed batch {i + 1}")
 
             self._logger.debug(
