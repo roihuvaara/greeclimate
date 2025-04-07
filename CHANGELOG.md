@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.9](https://github.com/roihuvaara/greeclimate/compare/r1.0.8...r1.0.9) (2025-04-07)
+
+
+### Bug Fixes
+
+* Change state update ([41c03ec](https://github.com/roihuvaara/greeclimate/commit/41c03ec83973027321e6f19c0d1b358c99f18436))
+
 ## [1.0.8](https://github.com/roihuvaara/greeclimate/compare/r1.0.7...r1.0.8) (2025-03-27)
 
 
