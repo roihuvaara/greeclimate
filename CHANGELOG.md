@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.12](https://github.com/roihuvaara/greeclimate/compare/r1.0.11...r1.0.12) (2025-04-07)
+
+
+### Bug Fixes
+
+* Simplify property getter ([71b0351](https://github.com/roihuvaara/greeclimate/commit/71b03516e347537a5f877a30590d6d9b961a59fe))
+
 ## [1.0.11](https://github.com/roihuvaara/greeclimate/compare/r1.0.10...r1.0.11) (2025-04-07)
 
 
