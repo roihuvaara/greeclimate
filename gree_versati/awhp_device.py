@@ -364,17 +364,37 @@ class AwhpDevice(BaseDevice):
 
     async def get_all_properties(self) -> dict:
         """Get all properties in a single request and return them."""
-        await self.update_all_properties()
-        # Get raw properties
+        # Only update properties if we don't have any yet or they're incomplete
+        if not self._properties or not all(prop.value in self._properties for prop in AwhpProps):
+            try:
+                await self.update_all_properties()
+            except DeviceTimeoutError:
+                self._logger.warning(
+                    "Timeout while updating properties, using existing data")
+
+        # Get raw properties (use what we have even if update failed)
         props = {prop.value: self.get_property(prop) for prop in AwhpProps}
+
         # Add calculated temperature values
         props.update({
             "water_in_temp": self.t_water_in_pe(),
             "water_out_temp": self.t_water_out_pe(),
             "hot_water_temp": self.hot_water_temp(),
             "opt_water_temp": self.t_opt_water(),
-            # Add other calculated values needed
+            "power": self.power,
+            "mode": self.mode,
+            "heat_temp_set": self.heat_temp_set,
+            "cool_temp_set": self.cool_temp_set,
+            "hot_water_temp_set": self.hot_water_temp_set,
+            "fast_heat_water": self.fast_heat_water,
+            "tank_heater_status": self.tank_heater_status,
+            "defrosting_status": self.system_defrosting_status,
+            "hp_heater_1_status": self.hp_heater_1_status,
+            "hp_heater_2_status": self.hp_heater_2_status,
+            "frost_protection": self.automatic_frost_protection,
+            "versati_series": self.versati_series,
         })
+
         return props
 
     async def update_state(self, wait_for: float = 30):
