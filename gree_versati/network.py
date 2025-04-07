@@ -275,21 +275,22 @@ class DeviceProtocol2(DeviceProtocolBase2):
         """
         _LOGGER.debug(f"Packet received from {addr}: {obj}")
 
-        params = {
-            Response.BIND_OK.value: lambda o, a: [o["pack"]["key"]],
-            Response.DATA.value: lambda o, a: [
-                dict(zip(o["pack"]["cols"], o["pack"]["dat"]))
-            ],
-            Response.RESULT.value: lambda o, a: [
-                dict(zip(o["pack"]["opt"], o["pack"]["val"]))
-            ],
-        }
-        handlers = {
-            Response.BIND_OK.value: lambda *args: self.__handle_device_bound(*args),
-            Response.DATA.value: lambda *args: self.__handle_state_update(*args),
-            Response.RESULT.value: lambda *args: self.__handle_state_update(*args),
-        }
         try:
+            params = {
+                Response.BIND_OK.value: lambda o, a: [o["pack"]["key"]],
+                Response.DATA.value: lambda o, a: [
+                    dict(zip(o["pack"]["cols"], o["pack"]["dat"]))
+                ],
+                Response.RESULT.value: lambda o, a: [
+                    dict(zip(o["pack"]["opt"], o["pack"]["val"]))
+                ],
+            }
+            handlers = {
+                Response.BIND_OK.value: lambda *args: self.__handle_device_bound(*args),
+                Response.DATA.value: lambda *args: self.__handle_state_update(*args),
+                Response.RESULT.value: lambda *args: self.__handle_state_update(*args),
+            }
+
             resp = obj.get("pack", {}).get("t")
             _LOGGER.debug(f"Response type: {resp}")
 
@@ -300,17 +301,18 @@ class DeviceProtocol2(DeviceProtocolBase2):
             _LOGGER.debug(f"Parsed parameters: {param}")
 
             handler(*param)
-        except AttributeError as e:
-            _LOGGER.exception("Error while handling packet", exc_info=e)
-        except KeyError as e:
-            _LOGGER.exception("Error while handling packet", exc_info=e)
-        else:
+
             # Call any registered callbacks for this event
             if resp in handlers:
                 for callback in self._handlers.get(Response(resp), []):
                     callback(*param)
-
-            # Set _drained event to indicate we've received a response
+        except AttributeError as e:
+            _LOGGER.exception("Error while handling packet", exc_info=e)
+        except KeyError as e:
+            _LOGGER.exception("Error while handling packet", exc_info=e)
+        finally:
+            # Always set _drained event to indicate we've received a response
+            # This fixes timeouts when unexpected responses are received
             self._drained.set()
 
     def handle_unknown_packet(self, obj, addr: IPAddr) -> None:

@@ -364,15 +364,15 @@ class AwhpDevice(BaseDevice):
 
     async def get_all_properties(self) -> dict:
         """Get all properties in a single request and return them."""
-        # Only update properties if we don't have any yet or they're incomplete
-        if not self._properties or not all(prop.value in self._properties for prop in AwhpProps):
+        # Only update if we don't have properties or they're incomplete
+        if not self._properties:
             try:
                 await self.update_all_properties()
             except DeviceTimeoutError:
                 self._logger.warning(
                     "Timeout while updating properties, using existing data")
 
-        # Get raw properties (use what we have even if update failed)
+        # Get raw properties
         props = {prop.value: self.get_property(prop) for prop in AwhpProps}
 
         # Add calculated temperature values
@@ -392,7 +392,7 @@ class AwhpDevice(BaseDevice):
             "hp_heater_1_status": self.hp_heater_1_status,
             "hp_heater_2_status": self.hp_heater_2_status,
             "frost_protection": self.automatic_frost_protection,
-            "versati_series": self.versati_series,
+            "versati_series": self.versati_series
         })
 
         return props
@@ -429,18 +429,18 @@ class AwhpDevice(BaseDevice):
                 if self.device_info is None:
                     raise DeviceNotBoundError("device_info is None")
 
-                # Send the request and wait for response
-                await self.send(self.create_status_message(self.device_info, *batch))
-                # Wait for the response to be processed
-                await asyncio.wait_for(self._drained.wait(), wait_for)
-                self._logger.debug(f"Processed batch {i + 1}")
+                # Send the request and get the response
+                res = await self.send(self.create_status_message(self.device_info, *batch))
+                self._logger.debug(
+                    f"Received response for batch {i + 1}: {res}")
 
             self._logger.debug(
                 f"All batches complete. Current device properties: {self._properties}"
             )
 
-        except asyncio.TimeoutError as err:
-            raise DeviceTimeoutError from err
+        except asyncio.TimeoutError:
+            self._logger.error("Timeout while requesting device state")
+            raise DeviceTimeoutError
         except Exception as e:
             self._logger.error(f"Error updating state: {e}", exc_info=True)
             raise
