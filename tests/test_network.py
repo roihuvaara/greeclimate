@@ -269,7 +269,8 @@ def test_bindok_handling():
     protocol.device_cipher = FakeCipher(b"1234567890123456")
 
     with patch.object(DeviceProtocol2, "handle_device_bound") as mock:
-        protocol.datagram_received(json.dumps(response).encode(), ("0.0.0.0", 0))
+        protocol.datagram_received(json.dumps(
+            response).encode(), ("0.0.0.0", 0))
         assert mock.call_count == 1
         assert mock.call_args[0][0] == "fake-key"
 
@@ -368,7 +369,8 @@ def test_handle_state_update():
 
     # Act
     protocol.packet_received(
-        {"pack": {"t": "dat", "cols": list(state.keys()), "dat": list(state.values())}},
+        {"pack": {"t": "dat", "cols": list(
+            state.keys()), "dat": list(state.values())}},
         ("0.0.0.0", 0),
     )
 
@@ -384,7 +386,8 @@ def test_handle_result_update():
 
     # Act
     protocol.packet_received(
-        {"pack": {"t": "res", "opt": list(state.keys()), "val": list(state.values())}},
+        {"pack": {"t": "res", "opt": list(
+            state.keys()), "val": list(state.values())}},
         ("0.0.0.0", 0),
     )
 
@@ -618,7 +621,7 @@ def test_device_key_get_set():
 )
 async def test_drained_event_set_after_response(response):
     """Test that the _drained event is set after receiving a response.
-    
+
     Tests various response types and error cases to ensure _drained is always set.
     """
     # Arrange

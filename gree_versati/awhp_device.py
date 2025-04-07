@@ -365,9 +365,17 @@ class AwhpDevice(BaseDevice):
     async def get_all_properties(self) -> dict:
         """Get all properties in a single request and return them."""
         await self.update_all_properties()
-
-        # Create a dictionary of all defined properties
-        return {prop.value: self.get_property(prop) for prop in AwhpProps}
+        # Get raw properties
+        props = {prop.value: self.get_property(prop) for prop in AwhpProps}
+        # Add calculated temperature values
+        props.update({
+            "water_in_temp": self.t_water_in_pe(),
+            "water_out_temp": self.t_water_out_pe(),
+            "hot_water_temp": self.hot_water_temp(),
+            "opt_water_temp": self.t_opt_water(),
+            # Add other calculated values needed
+        })
+        return props
 
     async def update_state(self, wait_for: float = 30):
         """Update the internal state of the device."""
@@ -432,7 +440,8 @@ class AwhpDevice(BaseDevice):
             )
 
         # Store previous property values for comparison
-        previous_properties = {k: v for k, v in self._properties.items() if k in kwargs}
+        previous_properties = {k: v for k,
+                               v in self._properties.items() if k in kwargs}
 
         # Update properties with new values
         self._properties.update(kwargs)
@@ -441,12 +450,15 @@ class AwhpDevice(BaseDevice):
         for key, new_value in kwargs.items():
             old_value = previous_properties.get(key, "N/A")
             if old_value != new_value:
-                self._logger.info("Property updated: %s changed from %s to %s", key, old_value, new_value)
+                self._logger.info(
+                    "Property updated: %s changed from %s to %s",
+                    key, old_value, new_value)
             else:
-                self._logger.debug("Property unchanged: %s remains %s", key, new_value)
+                self._logger.debug(
+                    "Property unchanged: %s remains %s", key, new_value)
 
         self._logger.debug("Properties after update: %s",
-                          {k: v for k, v in self._properties.items() if k in kwargs})
+                           {k: v for k, v in self._properties.items() if k in kwargs})
 
     async def push_state_update(self, wait_for: float = 30):
         """Push any pending state updates to the unit
